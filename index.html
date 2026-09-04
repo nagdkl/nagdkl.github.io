@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="Synergy 289 profession-role evidence map — interactive Mermaid viewer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://cdn.jsdelivr.net; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+  <title>Synergy · 289 Roles</title>
+  <style>
+    :root{
+      color-scheme:dark;
+      --bg:#07111f;--panel:#0d1b2d;--panel2:#12243b;--line:#27415f;
+      --text:#f2f7ff;--muted:#9fb2ca;--accent:#7bc3ff;--accent2:#84f1c0;
+      --warn:#ffd27a;--shadow:0 18px 60px rgba(0,0,0,.32)
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font:15px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{overflow:hidden}
+    button,input,a{font:inherit}
+    button,a{touch-action:manipulation}
+    .app{height:100dvh;display:grid;grid-template-rows:auto auto 1fr}
+    header{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);background:rgba(7,17,31,.92);backdrop-filter:blur(16px)}
+    .brand{min-width:0}.brand h1{font-size:18px;line-height:1.2;margin:0;letter-spacing:-.01em}.brand p{margin:4px 0 0;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .meta{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:5px 9px;color:var(--muted);font-size:12px}.chip strong{color:var(--text)}
+    .toolbar{display:flex;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--panel)}
+    .search{display:grid;grid-template-columns:minmax(170px,360px) auto auto;gap:6px;align-items:center;margin-right:auto}
+    input{width:100%;min-height:40px;border:1px solid var(--line);border-radius:10px;background:#071522;color:var(--text);padding:0 12px;outline:none}
+    input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(123,195,255,.15)}
+    .count{min-width:72px;color:var(--muted);font-size:12px;text-align:center}
+    button,.button{min-height:40px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);padding:0 12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+    button:hover,.button:hover{border-color:#476a91;background:#17304d}button:focus-visible,.button:focus-visible{outline:3px solid rgba(123,195,255,.5);outline-offset:2px}
+    .primary{border-color:#2f6a91;background:#0d3b5c}.primary:hover{background:#124a73}
+    .stage{position:relative;min-height:0;background:#f7fafc;overflow:hidden;cursor:grab}.stage.dragging{cursor:grabbing}
+    #canvas{position:absolute;inset:0;overflow:hidden;background:
+      linear-gradient(#e6edf5 1px,transparent 1px),linear-gradient(90deg,#e6edf5 1px,transparent 1px),#f8fbfe;
+      background-size:24px 24px}
+    #canvas svg{display:block;width:100%;height:100%;user-select:none;-webkit-user-select:none}
+    .loading,.error{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:#38516a}.error{color:#8b2c2c}.loading[hidden],.error[hidden]{display:none}
+    .hint{position:absolute;left:12px;bottom:12px;z-index:3;max-width:min(560px,calc(100% - 24px));padding:8px 10px;border-radius:10px;background:rgba(7,17,31,.88);color:#d8e7f7;font-size:12px;box-shadow:var(--shadow);pointer-events:none}
+    .search-dim{opacity:.10!important}.search-match{opacity:1!important;filter:drop-shadow(0 0 4px rgba(16,112,202,.75))}
+    dialog{width:min(880px,calc(100vw - 24px));max-height:80dvh;border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--text);padding:0;box-shadow:var(--shadow)}
+    dialog::backdrop{background:rgba(0,0,0,.62)}.dialog-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line)}.dialog-head h2{margin:0;font-size:16px}pre{margin:0;padding:16px;white-space:pre;overflow:auto;max-height:65dvh;color:#d7e5f6;background:#07111f;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    @media(max-width:760px){header{align-items:flex-start;padding:10px 12px}.meta{display:none}.toolbar{flex-wrap:wrap}.search{grid-template-columns:1fr auto auto;width:100%;order:0}.toolbar>.button,.toolbar>button:not(.search button){flex:1 1 auto}.brand p{white-space:normal}.hint{font-size:11px}.app{grid-template-rows:auto auto 1fr}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <h1>Synergy · 289 profession-role evidence map</h1>
+      <p>20 evidence-backed source areas · source-only map · public read-only visualization</p>
+    </div>
+    <div class="meta" aria-label="Evidence summary">
+      <span class="chip"><strong>289/289</strong> roles</span>
+      <span class="chip"><strong>20</strong> areas</span>
+      <span class="chip">S = authored source</span>
+      <span class="chip">NP = readiness not proven</span>
+    </div>
+  </header>
+
+  <nav class="toolbar" aria-label="Diagram controls">
+    <div class="search">
+      <label class="sr-only" for="q">Поиск роли</label>
+      <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Найти роль: SRE, дизайнер, role-206…">
+      <span id="count" class="count" aria-live="polite">289 ролей</span>
+      <button id="next" type="button" title="Следующее совпадение">Далее</button>
+    </div>
+    <button id="zoomOut" type="button" aria-label="Уменьшить">−</button>
+    <button id="fit" class="primary" type="button">Вписать</button>
+    <button id="zoomIn" type="button" aria-label="Увеличить">+</button>
+    <button id="sourceBtn" type="button">MMD</button>
+    <a class="button" href="diagram.mmd" download>Скачать</a>
+  </nav>
+
+  <main id="stage" class="stage" aria-label="Интерактивная диаграмма">
+    <div id="canvas"></div>
+    <div id="loading" class="loading">Загружаю Mermaid и строю 289 ролей…</div>
+    <div id="error" class="error" hidden></div>
+    <div class="hint">Колесо/жест — масштаб · перетаскивание — панорама · поиск выделяет роли · Enter/«Далее» — переход по совпадениям</div>
+  </main>
+</div>
+
+<dialog id="sourceDialog">
+  <div class="dialog-head"><h2>Authoritative MMD source</h2><button id="closeSource" type="button">Закрыть</button></div>
+  <pre id="source"></pre>
+</dialog>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.17.2/dist/mermaid.esm.min.mjs';
+
+  const $ = (s) => document.querySelector(s);
+  const canvas = $('#canvas');
+  const stage = $('#stage');
+  const loading = $('#loading');
+  const errorBox = $('#error');
+  const q = $('#q');
+  const count = $('#count');
+  const sourceDialog = $('#sourceDialog');
+  const sourcePre = $('#source');
+  let svg, original, view, matches = [], matchIndex = -1;
+
+  const statusError = (message) => {
+    loading.hidden = true;
+    errorBox.hidden = false;
+    errorBox.textContent = `Не удалось отрисовать диаграмму: ${message}. MMD можно открыть кнопкой «MMD» или скачать.`;
+  };
+
+  const setView = (next) => {
+    if (!svg) return;
+    view = next;
+    svg.setAttribute('viewBox', `${view.x} ${view.y} ${view.w} ${view.h}`);
+  };
+
+  const fit = () => original && setView({...original});
+  const zoom = (factor, cx = .5, cy = .5) => {
+    if (!view) return;
+    const nw = view.w * factor, nh = view.h * factor;
+    setView({x:view.x + (view.w-nw)*cx, y:view.y + (view.h-nh)*cy, w:nw, h:nh});
+  };
+
+  const centerNode = (node) => {
+    if (!svg || !node) return;
+    const b = node.getBBox();
+    const margin = 3.6;
+    const aspect = Math.max(stage.clientWidth,1) / Math.max(stage.clientHeight,1);
+    let w = Math.max(b.width * margin, 260), h = Math.max(b.height * margin, 140);
+    if (w / h < aspect) w = h * aspect; else h = w / aspect;
+    setView({x:b.x+b.width/2-w/2,y:b.y+b.height/2-h/2,w,h});
+  };
+
+  const clearSearchStyles = () => {
+    if (!svg) return;
+    svg.querySelectorAll('g.node').forEach(n => {n.classList.remove('search-dim','search-match');});
+  };
+
+  const runSearch = () => {
+    if (!svg) return;
+    const query = q.value.trim().toLocaleLowerCase('ru');
+    const nodes = [...svg.querySelectorAll('g.node')];
+    clearSearchStyles();
+    if (!query) {
+      matches=[]; matchIndex=-1; count.textContent='289 ролей'; return;
+    }
+    matches = nodes.filter(n => n.textContent.toLocaleLowerCase('ru').includes(query));
+    const set = new Set(matches);
+    nodes.forEach(n => n.classList.add(set.has(n)?'search-match':'search-dim'));
+    matchIndex = matches.length ? 0 : -1;
+    count.textContent = `${matches.length} найдено`;
+    if (matches.length) centerNode(matches[0]);
+  };
+
+  const nextMatch = () => {
+    if (!matches.length) return;
+    matchIndex = (matchIndex + 1) % matches.length;
+    centerNode(matches[matchIndex]);
+    count.textContent = `${matchIndex+1}/${matches.length}`;
+  };
+
+  async function boot(){
+    try{
+      const response = await fetch('diagram.mmd',{cache:'no-store'});
+      if(!response.ok) throw new Error(`MMD HTTP ${response.status}`);
+      const source = await response.text();
+      sourcePre.textContent = source;
+      mermaid.initialize({startOnLoad:false,securityLevel:'strict',theme:'base',flowchart:{htmlLabels:true,useMaxWidth:false},themeVariables:{fontFamily:'Inter, system-ui, sans-serif',primaryColor:'#edf6ff',primaryTextColor:'#102a43',primaryBorderColor:'#6aa8d8',lineColor:'#8096aa',clusterBkg:'#f7fbff',clusterBorder:'#aac6dc'}});
+      const {svg:markup} = await mermaid.render('synergy289',source);
+      canvas.innerHTML = markup;
+      svg = canvas.querySelector('svg');
+      if(!svg) throw new Error('SVG отсутствует');
+      const vb = svg.viewBox?.baseVal;
+      if(!vb || !vb.width || !vb.height) throw new Error('viewBox отсутствует');
+      original = {x:vb.x,y:vb.y,w:vb.width,h:vb.height};
+      svg.removeAttribute('width'); svg.removeAttribute('height');
+      svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+      fit();
+      loading.hidden = true;
+      q.addEventListener('input',runSearch);
+    }catch(error){statusError(error?.message||String(error));}
+  }
+
+  $('#fit').addEventListener('click',fit);
+  $('#zoomIn').addEventListener('click',()=>zoom(.78));
+  $('#zoomOut').addEventListener('click',()=>zoom(1.28));
+  $('#next').addEventListener('click',nextMatch);
+  q.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();nextMatch();}});
+  $('#sourceBtn').addEventListener('click',()=>sourceDialog.showModal());
+  $('#closeSource').addEventListener('click',()=>sourceDialog.close());
+
+  stage.addEventListener('wheel',e=>{
+    if(!view) return;
+    e.preventDefault();
+    const r=stage.getBoundingClientRect();
+    const cx=(e.clientX-r.left)/r.width, cy=(e.clientY-r.top)/r.height;
+    zoom(e.deltaY<0?.84:1.19,cx,cy);
+  },{passive:false});
+
+  let drag=null;
+  stage.addEventListener('pointerdown',e=>{
+    if(!view || e.button!==0) return;
+    drag={x:e.clientX,y:e.clientY,v:{...view}};
+    stage.setPointerCapture(e.pointerId); stage.classList.add('dragging');
+  });
+  stage.addEventListener('pointermove',e=>{
+    if(!drag || !view) return;
+    const r=stage.getBoundingClientRect();
+    const dx=(e.clientX-drag.x)*drag.v.w/r.width;
+    const dy=(e.clientY-drag.y)*drag.v.h/r.height;
+    setView({x:drag.v.x-dx,y:drag.v.y-dy,w:drag.v.w,h:drag.v.h});
+  });
+  const endDrag=e=>{if(drag){drag=null;stage.classList.remove('dragging');try{stage.releasePointerCapture(e.pointerId)}catch{}}};
+  stage.addEventListener('pointerup',endDrag); stage.addEventListener('pointercancel',endDrag);
+  window.addEventListener('resize',()=>{if(original && !q.value) fit();});
+
+  boot();
+</script>
+</body>
+</html>
