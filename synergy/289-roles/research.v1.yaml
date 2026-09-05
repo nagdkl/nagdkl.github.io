@@ -1,0 +1,42 @@
+schema: synergy.public_289_viewer_publication/v1
+version: 1.0.0
+target:
+  repository: nagdkl/nagdkl.github.io
+  base: main
+  base_sha: ec8a94779c7e5ad33d1319a153a5d721d74744aa
+  namespace: synergy/289-roles/
+  root_paths_modified: false
+runtime:
+  provider: jsDelivr
+  package: mermaid
+  version: 11.17.2
+  license: MIT
+  loading: external ESM from external app.js
+  selection_reason: official Mermaid browser ESM pattern; avoids old inline-script
+    CSP failure; vendored npm materialization timed out in ChatGPT sandbox and was
+    not retried
+evidence:
+  mmd_sha256: 1dec3e9fe07a80829735bfb26e06ec4dea86b760588e52cbe7f280b2fbf86933
+  roles: 289
+  areas: 20
+  static_tests: PASS
+  js_syntax: PASS
+timeouts:
+  mmd_fetch_seconds: 10
+  render_seconds: 45
+security:
+  gitleaks_version_required: 8.30.1
+  gitleaks_asset_sha256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+  gitleaks_binary_sha256: 88f91962aa2f93ac6ab281d553b9e125f5197bbbce38f9f2437f7299c32e5509
+  candidate_scan_status: BLOCKED_NOT_RUN_IN_CHATGPT_SANDBOX
+  source_commit_allowed: false
+authority_nonclaims:
+  ready: false
+  merge: false
+  runtime: false
+  release: false
+  deployment: false
+  production: false
+next_safe_action: Run exact Gitleaks 8.30.1 on this candidate plus reachable target
+  history; on PASS create isolated branch, source commit, exact readback, and Draft
+  PR.
