@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse
 import json
 import math
 import os
@@ -9,6 +8,8 @@ import stat
 
 MAX_BYTES = 131072
 PROMPT_PATH = "docs/prompts/pr5-evidence-currentness-continuation.v1.yaml"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+PROMPT_FILE = REPO_ROOT / PROMPT_PATH
 EXPECTED_TOP = {"prompt"}
 EXPECTED_PROMPT_KEYS = {
     "metadata", "mission", "canonical_full_read_gate", "verified_starting_tuple",
@@ -60,14 +61,16 @@ def walk(value, path="$" ):
         for index, child in enumerate(value):
             yield from walk(child, f"{path}[{index}]")
 
-def validate(doc: dict) -> None:
+def require_prompt(doc: dict) -> dict:
     if set(doc) != EXPECTED_TOP:
         fail("unexpected top-level keys")
-    p = doc["prompt"]
-    if not isinstance(p, dict) or set(p) != EXPECTED_PROMPT_KEYS:
+    prompt = doc["prompt"]
+    if not isinstance(prompt, dict) or set(prompt) != EXPECTED_PROMPT_KEYS:
         fail("prompt schema key drift")
-    md = p["metadata"]
-    critical = {
+    return prompt
+
+def validate_metadata(prompt: dict) -> None:
+    expected = {
         "schema": "synergy.pages.pr5-evidence-currentness-continuation/v1",
         "version": "1.0.0",
         "repository": "nagdkl/nagdkl.github.io",
@@ -76,73 +79,124 @@ def validate(doc: dict) -> None:
         "execute_in_generation_message": False,
         "automatic_retries": 0,
     }
-    for key, expected in critical.items():
-        if md.get(key) != expected:
+    metadata = prompt["metadata"]
+    for key, value in expected.items():
+        if metadata.get(key) != value:
             fail(f"metadata.{key} drift")
-    if p["canonical_full_read_gate"].get("required_before_execution") is not True:
+
+def validate_full_read_gate(prompt: dict) -> None:
+    gate = prompt["canonical_full_read_gate"]
+    if gate.get("required_before_execution") is not True:
         fail("full read gate disabled")
-    if p["canonical_full_read_gate"].get("fail_closed_on_gap") is not True:
+    if gate.get("fail_closed_on_gap") is not True:
         fail("full read fail-closed disabled")
-    weights = p["lane_selection"]["weights"]
+
+def validate_lane_weights(prompt: dict) -> None:
+    weights = prompt["lane_selection"]["weights"]
     if not isinstance(weights, dict) or not weights:
         fail("lane weights missing")
-    if any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) or v < 0 for v in weights.values()):
+    invalid = any(
+        isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or not math.isfinite(value)
+        or value < 0
+        for value in weights.values()
+    )
+    if invalid:
         fail("invalid lane weight")
     if abs(sum(weights.values()) - 1.0) > 1e-12:
         fail("lane weights must sum to 1")
-    if p["reuse_policy"]["material_gap_candidate_count"] != {"min": 3, "max": 7}:
+
+def validate_reuse_policy(prompt: dict) -> None:
+    policy = prompt["reuse_policy"]
+    if policy["material_gap_candidate_count"] != {"min": 3, "max": 7}:
         fail("material candidate range drift")
-    if p["reuse_policy"]["trivial_atom_candidate_count"] != 1:
+    if policy["trivial_atom_candidate_count"] != 1:
         fail("trivial candidate count drift")
-    safety = p["git_safety"]
+
+def validate_git_safety(prompt: dict) -> None:
+    safety = prompt["git_safety"]
     for key in ("direct_main_write", "force_push", "shared_mutable_branch"):
         if safety.get(key) is not False:
             fail(f"unsafe git setting: {key}")
     if safety.get("gitleaks_before_every_commit") is not True:
         fail("gitleaks law missing")
-    if p["authority"] != {"draft": True, "ready": False, "merge": False, "runtime": False, "release": False, "deployment": False, "production": False, "certification": False}:
+
+def validate_authority_and_artifacts(prompt: dict) -> None:
+    expected_authority = {
+        "draft": True, "ready": False, "merge": False, "runtime": False,
+        "release": False, "deployment": False, "production": False,
+        "certification": False,
+    }
+    if prompt["authority"] != expected_authority:
         fail("authority drift")
-    artifact = p["artifact_policy"]
+    artifact = prompt["artifact_policy"]
     if artifact.get("canonical_human_node_publisher_path") != "scripts/human_node/publish_pr5_prompt_governance_v1.py":
         fail("canonical publisher path drift")
     if artifact.get("publisher_test_path") != "tests/validation/test_publish_pr5_prompt_governance_v1.py":
         fail("publisher test path drift")
-    if p["execution_protocol"].get("one_active_mutation_nano_step") is not True:
+
+def validate_execution_protocol(prompt: dict) -> None:
+    protocol = prompt["execution_protocol"]
+    if protocol.get("one_active_mutation_nano_step") is not True:
         fail("multiple active mutation allowed")
-    if p["execution_protocol"].get("decompose_until_each_mutation_is_single_purpose_and_independently_readbackable") is not True:
+    if protocol.get("decompose_until_each_mutation_is_single_purpose_and_independently_readbackable") is not True:
         fail("nano decomposition law missing")
-    steps = p["nano_steps"]
+
+def validate_nano_steps(prompt: dict) -> None:
+    steps = prompt["nano_steps"]
     if not isinstance(steps, list) or len(steps) != 12:
         fail("expected N0..N11")
-    ids = [s.get("id") for s in steps]
-    if ids != [f"N{i}" for i in range(12)]:
+    if [step.get("id") for step in steps] != [f"N{i}" for i in range(12)]:
         fail("nano step order/id drift")
     for step in steps:
-        if step.get("mutation_class") not in {"READ_ONLY", "LOCAL_EPHEMERAL", "WRITE"}:
-            fail("invalid mutation class")
-        if not isinstance(step.get("timeout_s"), int) or not 1 <= step["timeout_s"] <= 120:
-            fail("invalid step timeout")
-        if not step.get("checkpoint"):
-            fail("missing checkpoint")
-    tp = p["timeout_policy_seconds"]
-    if tp.get("automatic_retries") != 0:
+        validate_nano_step(step)
+
+def validate_nano_step(step: dict) -> None:
+    if step.get("mutation_class") not in {"READ_ONLY", "LOCAL_EPHEMERAL", "WRITE"}:
+        fail("invalid mutation class")
+    timeout = step.get("timeout_s")
+    if not isinstance(timeout, int) or not 1 <= timeout <= 120:
+        fail("invalid step timeout")
+    if not step.get("checkpoint"):
+        fail("missing checkpoint")
+
+def validate_timeout_policy(prompt: dict) -> None:
+    policy = prompt["timeout_policy_seconds"]
+    if policy.get("automatic_retries") != 0:
         fail("timeout policy retry drift")
-    for key, value in tp.items():
+    for key, value in policy.items():
         if key == "automatic_retries":
             continue
         if not isinstance(value, int) or not 1 <= value <= 120:
             fail(f"invalid timeout {key}")
-    for path, value in walk(p):
+
+def validate_retry_invariants(prompt: dict) -> None:
+    for path, value in walk(prompt):
         leaf = path.rsplit(".", 1)[-1]
         if leaf in {"automatic_retries", "automatic_retry"} and value != 0:
             fail(f"retry drift at {path}")
 
+def validate(doc: dict) -> None:
+    prompt = require_prompt(doc)
+    validators = (
+        validate_metadata,
+        validate_full_read_gate,
+        validate_lane_weights,
+        validate_reuse_policy,
+        validate_git_safety,
+        validate_authority_and_artifacts,
+        validate_execution_protocol,
+        validate_nano_steps,
+        validate_timeout_policy,
+        validate_retry_invariants,
+    )
+    for validator in validators:
+        validator(prompt)
+
 def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--prompt", default=PROMPT_PATH)
-    args = ap.parse_args()
     try:
-        doc = json.loads(read_regular(Path(args.prompt)))
+        doc = json.loads(read_regular(PROMPT_FILE))
         if not isinstance(doc, dict):
             fail("root must be object")
         validate(doc)

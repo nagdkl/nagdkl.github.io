@@ -1,6 +1,7 @@
 from __future__ import annotations
 import importlib.util
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -50,6 +51,20 @@ class PromptContractTests(unittest.TestCase):
     def test_unknown_top_key_rejected(self):
         with self.assertRaises(validator.ValidationError):
             self.validate_copy(lambda d: d["prompt"].__setitem__("decorative_extra", True))
+
+    def test_validator_uses_canonical_prompt_from_any_cwd(self):
+        original = Path.cwd()
+        with tempfile.TemporaryDirectory() as td:
+            os.chdir(td)
+            try:
+                self.assertEqual(validator.main(), 0)
+            finally:
+                os.chdir(original)
+
+    def test_validator_has_no_user_controlled_prompt_cli_path(self):
+        source = VPATH.read_text(encoding="utf-8")
+        self.assertNotIn('add_argument("--prompt"', source)
+        self.assertNotIn("args.prompt", source)
 
 if __name__ == "__main__":
     unittest.main()

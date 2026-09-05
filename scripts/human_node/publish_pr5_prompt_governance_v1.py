@@ -33,6 +33,7 @@ GL_ASSET_URL = "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/g
 GL_ASSET_SHA256 = "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
 FALLBACK_GIT_NAME = "nagdkl"
 FALLBACK_GIT_EMAIL = "194505092+nagdkl@users.noreply.github.com"
+BUNDLE_MANIFEST_NAME = "bundle-manifest.json"
 SOURCE_PATHS = (
     "docs/prompts/pr5-evidence-currentness-continuation.v1.yaml",
     "docs/research/2026-09-05_pr5-prompt-engineering-evolution.v1.yaml",
@@ -109,10 +110,10 @@ def safe_extract_bundle(bundle: Path, target: Path, expected_sha: str) -> Path:
             with zf.open(info) as src, dst.open("wb") as out:
                 shutil.copyfileobj(src, out)
             dst.chmod(0o600)
-    expected_names = set(SOURCE_PATHS) | {"bundle-manifest.json"}
+    expected_names = set(SOURCE_PATHS) | {BUNDLE_MANIFEST_NAME}
     if names != expected_names:
         raise Blocked("bundle_pathset_mismatch", "recover_exact_prompt_governance_bundle", False)
-    manifest = json.loads((target / "bundle-manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads((target / BUNDLE_MANIFEST_NAME).read_text(encoding="utf-8"))
     if manifest.get("write_set") != list(SOURCE_PATHS):
         raise Blocked("bundle_manifest_write_set_mismatch", "recover_exact_prompt_governance_bundle", False)
     files = manifest.get("files")
@@ -233,6 +234,18 @@ def validate_mirror(mirror: Path, repo_url: str) -> bool:
     return fsck.returncode == 0
 
 
+def _install_staged_mirror(staged: Path, mirror: Path, repo_url: str) -> None:
+    try:
+        os.replace(staged, mirror)
+        return
+    except OSError:
+        pass
+    if mirror.exists() and validate_mirror(mirror, repo_url):
+        shutil.rmtree(staged, ignore_errors=True)
+        return
+    raise Blocked("mirror_atomic_install_failed", "inspect_cache_parent_without_deleting_unknown_state", False)
+
+
 def initialize_mirror(repo_url: str, mirror: Path, private: Path, steps: Steps) -> Path:
     mirror.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     if mirror.exists():
@@ -256,16 +269,9 @@ def initialize_mirror(repo_url: str, mirror: Path, private: Path, steps: Steps) 
     clone = cp(["git", "clone", "--mirror", "--quiet", repo_url, str(staged)], timeout_s=60)
     if clone.returncode != 0 or not validate_mirror(staged, repo_url):
         raise Blocked("mirror_initialization_failed", "recover_connectivity_then_new_attempt", True)
-    try:
-        os.replace(staged, mirror)
-    except OSError:
-        if mirror.exists() and validate_mirror(mirror, repo_url):
-            shutil.rmtree(staged, ignore_errors=True)
-        else:
-            raise Blocked("mirror_atomic_install_failed", "inspect_cache_parent_without_deleting_unknown_state", False)
+    _install_staged_mirror(staged, mirror, repo_url)
     steps.ok(f"canonical_mirror_initialized path={mirror}")
     return mirror
-
 
 def mirror_ref(mirror: Path, ref: str) -> str | None:
     result = git_bare(mirror, ["rev-parse", "--verify", ref], timeout_s=10)
@@ -367,11 +373,188 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     p.add_argument("--publish", action="store_true")
     return p.parse_args(argv)
 
+def _prepare_gitleaks_binary(args: argparse.Namespace, private: Path, steps: Steps) -> Path:
+    if args.gitleaks_bin is not None:
+        return args.gitleaks_bin.resolve(strict=True)
+    asset = args.gitleaks_asset.resolve(strict=True) if args.gitleaks_asset else private / "gitleaks.tar.gz"
+    if args.gitleaks_asset is None:
+        steps.start("download_pinned_gitleaks_asset", 60)
+        download(GL_ASSET_URL, asset, 60)
+        steps.ok("gitleaks_asset_download_PASS retries=0")
+    steps.start("verify_gitleaks_asset_sha256", 10)
+    if sha256(asset) != GL_ASSET_SHA256:
+        raise Blocked("gitleaks_asset_sha256_mismatch", "stop_and_reconcile_official_asset", False)
+    steps.ok(f"gitleaks_asset_sha256_{GL_ASSET_SHA256}")
+    return safe_extract_gitleaks(asset, private / "gitleaks-bin")
+
+
+def _prepare_candidate(args: argparse.Namespace, private: Path, steps: Steps) -> tuple[Path, Path]:
+    candidate = safe_extract_bundle(args.bundle.resolve(strict=True), private / "candidate", args.bundle_sha256)
+    steps.ok(f"bundle_identity_PASS paths={len(SOURCE_PATHS)}")
+    gitleaks = _prepare_gitleaks_binary(args, private, steps)
+    validate_gitleaks(gitleaks, private, steps)
+    steps.start("exact_outgoing_bundle_gitleaks", 60)
+    report = private / "candidate-report.json"
+    scan = gitleaks_run(gitleaks, candidate, report, git_mode=False, timeout_s=60)
+    if scan.returncode != 0 or load_report(report):
+        raise Blocked("exact_outgoing_gitleaks_failed", "do_not_commit_or_publish_candidate", False)
+    steps.ok("exact_outgoing_gitleaks_PASS findings=0")
+    return candidate, gitleaks
+
+
+def _prepare_mirror(args: argparse.Namespace, private: Path, steps: Steps) -> tuple[Path, object]:
+    cache_root = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
+    mirror = cache_root / MIRROR_REL
+    lock = acquire_mirror_lock(mirror.parent / "nagdkl.github.io.mirror.lock")
+    try:
+        mirror_used = initialize_mirror(args.repo_url, mirror, private, steps)
+    except BaseException:
+        lock.close()
+        raise
+    return mirror_used, lock
+
+
+def _verify_reserved_lane(args: argparse.Namespace, mirror: Path, steps: Steps) -> None:
+    steps.start("mirror_currentness_fence", 20)
+    local_main = mirror_ref(mirror, "refs/heads/main")
+    local_prompt = mirror_ref(mirror, f"refs/heads/{args.branch}")
+    if local_main != args.expected_base:
+        raise Blocked("base_drift", "refresh_remote_currentness_before_source_write", False)
+    if local_prompt != args.expected_base:
+        raise Blocked("reserved_branch_drift", "recover_reserved_prompt_branch_read_only", False)
+    remote_prompt = remote_branch_sha_from_url(args.repo_url, args.branch)
+    if remote_prompt != args.expected_base:
+        raise Blocked("reserved_branch_remote_drift", "recover_reserved_prompt_branch_read_only", False)
+    for rel in SOURCE_PATHS:
+        exists = git_bare(mirror, ["cat-file", "-e", f"{args.expected_base}:{rel}"], timeout_s=5)
+        if exists.returncode == 0:
+            raise Blocked("candidate_path_already_exists", "inspect_existing_prompt_lane_before_replay", False)
+    steps.ok(f"mirror_currentness_PASS main={local_main} reserved_branch={local_prompt}")
+
+
+def _create_worktree(args: argparse.Namespace, mirror: Path, private: Path, steps: Steps) -> Path:
+    repo = private / "worktree"
+    steps.start("create_ephemeral_detached_worktree", 30)
+    add_detached_worktree(mirror, repo, args.expected_base)
+    head = cp(["git", "rev-parse", "HEAD"], cwd=repo, timeout_s=10).stdout.strip()
+    if head != args.expected_base:
+        raise Blocked("worktree_base_drift", "remove_ephemeral_worktree_and_reconcile_mirror", False)
+    steps.ok(f"ephemeral_worktree_PASS head={head}")
+    return repo
+
+
+def _materialize_candidate(candidate: Path, repo: Path, steps: Steps) -> None:
+    steps.start("materialize_exact_write_set", 10)
+    manifest = json.loads((candidate / BUNDLE_MANIFEST_NAME).read_text(encoding="utf-8"))["files"]
+    for rel in SOURCE_PATHS:
+        dst = repo / rel
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(candidate / rel, dst)
+        if sha256(dst) != manifest[rel]:
+            raise Blocked("post_copy_hash_mismatch", "discard_ephemeral_checkout_and_recover_candidate", False)
+    steps.ok(f"write_set_materialized_paths={len(SOURCE_PATHS)}")
+
+
+def _validate_candidate(repo: Path, private: Path, gitleaks: Path, steps: Steps) -> None:
+    steps.start("local_prompt_validation", 45)
+    python_paths = [str(repo / rel) for rel in SOURCE_PATHS if rel.endswith(".py")]
+    compile_result = cp([sys.executable, "-m", "py_compile", *python_paths], timeout_s=30)
+    if compile_result.returncode != 0:
+        raise Blocked("python_compile_failed", "repair_candidate_before_publication", False)
+    validate = cp([sys.executable, SOURCE_PATHS[2]], cwd=repo, timeout_s=15)
+    if validate.returncode != 0:
+        raise Blocked("prompt_validator_failed", "repair_candidate_before_publication", False)
+    tests = cp([sys.executable, "-m", "unittest", "-v", SOURCE_PATHS[3], SOURCE_PATHS[5]], cwd=repo, timeout_s=45)
+    if tests.returncode != 0:
+        raise Blocked("prompt_or_publisher_hostile_tests_failed", "repair_candidate_before_publication", False)
+    diffcheck = cp(["git", "diff", "--check"], cwd=repo, timeout_s=10)
+    if diffcheck.returncode != 0:
+        raise Blocked("git_diff_check_failed", "repair_candidate_before_publication", False)
+    steps.ok("compile_validator_prompt_publisher_diffcheck_PASS")
+    steps.start("precommit_worktree_gitleaks", 60)
+    report = private / "worktree-report.json"
+    scan = gitleaks_run(gitleaks, repo, report, git_mode=False, timeout_s=60)
+    if scan.returncode != 0 or load_report(report):
+        raise Blocked("precommit_gitleaks_failed", "do_not_commit_candidate", False)
+    steps.ok("precommit_gitleaks_PASS findings=0")
+
+
+def _git_identity(repo: Path) -> tuple[str, str]:
+    name = cp(["git", "config", "user.name"], cwd=repo, timeout_s=5)
+    email = cp(["git", "config", "user.email"], cwd=repo, timeout_s=5)
+    commit_name = name.stdout.strip() if name.returncode == 0 and name.stdout.strip() else FALLBACK_GIT_NAME
+    commit_email = email.stdout.strip() if email.returncode == 0 and email.stdout.strip() else FALLBACK_GIT_EMAIL
+    return commit_name, commit_email
+
+
+def _create_verified_commit(repo: Path, private: Path, gitleaks: Path, steps: Steps) -> str:
+    steps.start("create_local_commit_after_security_PASS", 30)
+    add = cp(["git", "add", "--", *SOURCE_PATHS], cwd=repo, timeout_s=10)
+    if add.returncode != 0:
+        raise Blocked("git_add_failed", "inspect_ephemeral_checkout", True)
+    staged = cp(["git", "diff", "--cached", "--name-only"], cwd=repo, timeout_s=10)
+    if set(staged.stdout.splitlines()) != set(SOURCE_PATHS):
+        raise Blocked("staged_pathset_mismatch", "discard_ephemeral_checkout_and_reconcile", False)
+    commit_name, commit_email = _git_identity(repo)
+    commit = cp(["git", "-c", f"user.name={commit_name}", "-c", f"user.email={commit_email}", "commit", "-m", "docs(prompt): add PR5 evidence-currentness continuation v1"], cwd=repo, timeout_s=20)
+    if commit.returncode != 0:
+        raise Blocked("local_commit_failed", "inspect_ephemeral_checkout", False)
+    commit_sha = cp(["git", "rev-parse", "HEAD"], cwd=repo, timeout_s=10).stdout.strip()
+    steps.ok(f"local_commit_{commit_sha}")
+    steps.start("full_reachable_history_gitleaks", 90)
+    report = private / "history-report.json"
+    scan = gitleaks_run(gitleaks, repo, report, git_mode=True, timeout_s=90)
+    if scan.returncode != 0 or load_report(report):
+        raise Blocked("full_history_gitleaks_failed", "do_not_push_candidate", False)
+    steps.ok("full_reachable_history_gitleaks_PASS findings=0")
+    return commit_sha
+
+
+def _publish_checkpoint(args: argparse.Namespace, repo: Path, commit_sha: str, steps: Steps) -> str | None:
+    steps.start("prepush_remote_currentness_fence", 20)
+    if remote_branch_sha(repo, "main") != args.expected_base:
+        raise Blocked("remote_main_drift_before_push", "refresh_base_and_revalidate_candidate", False)
+    old_branch = remote_branch_sha(repo, args.branch)
+    if old_branch != args.expected_base:
+        raise Blocked("reserved_branch_drift_before_push", "recover_reserved_branch_read_only", False)
+    steps.ok(f"prepush_fence_PASS main={args.expected_base} reserved_branch={old_branch}")
+    if not args.publish:
+        steps.start("publication_authority", 1)
+        steps.ok("LOCAL_VALIDATION_ONLY no_push no_PR")
+        return None
+    push_with_recovery(repo, args.repo_url, args.branch, commit_sha, old_branch, steps)
+    steps.start("postpush_base_currentness_fence", 20)
+    if remote_branch_sha(repo, "main") != args.expected_base:
+        raise Blocked("base_drift_after_branch_checkpoint", "keep_branch_checkpoint_and_reconcile_before_PR_creation", False)
+    steps.ok(f"postpush_base_fence_PASS main={args.expected_base}")
+    return create_draft_pr(repo, args.branch, commit_sha, steps, args.gh_bin)
+
+
+def _write_success_receipt(evidence: Path, receipt: dict[str, object], commit_sha: str, pr_url: str | None) -> None:
+    receipt.update({
+        "status": "PASS",
+        "commit": commit_sha,
+        "gitleaks_version": GL_VERSION,
+        "gitleaks_exact_outgoing": "PASS",
+        "gitleaks_full_history": "PASS",
+        "source_paths": list(SOURCE_PATHS),
+        "pr_url": pr_url,
+    })
+    (evidence / "receipt.json").write_text(json.dumps(receipt, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
     evidence = args.state_root / "runs" / f"{int(time.time())}-{os.getpid()}"
     steps = Steps(evidence)
-    receipt: dict[str, object] = {"schema":"synergy.pages.pr5_prompt_governance_publication_receipt/v1","status":"BLOCKED","automatic_retries":0,"base":args.expected_base,"branch":args.branch,"bundle_sha256":args.bundle_sha256}
+    receipt: dict[str, object] = {
+        "schema": "synergy.pages.pr5_prompt_governance_publication_receipt/v1",
+        "status": "BLOCKED",
+        "automatic_retries": 0,
+        "base": args.expected_base,
+        "branch": args.branch,
+        "bundle_sha256": args.bundle_sha256,
+    }
     try:
         steps.start("preflight_and_bundle_identity", 10)
         if sys.version_info < (3, 10):
@@ -379,137 +562,34 @@ def main(argv: Sequence[str] | None = None) -> int:
         if shutil.which("git") is None:
             raise Blocked("git_missing", "install_git_then_new_attempt", True)
         with tempfile.TemporaryDirectory(prefix="synergy-pr5-prompt-v1-") as td:
-            private = Path(td); private.chmod(0o700)
-            candidate = safe_extract_bundle(args.bundle.resolve(strict=True), private / "candidate", args.bundle_sha256)
-            steps.ok(f"bundle_identity_PASS paths={len(SOURCE_PATHS)}")
-            if args.gitleaks_bin:
-                gitleaks = args.gitleaks_bin.resolve(strict=True)
-            else:
-                asset = args.gitleaks_asset.resolve(strict=True) if args.gitleaks_asset else private / "gitleaks.tar.gz"
-                if not args.gitleaks_asset:
-                    steps.start("download_pinned_gitleaks_asset", 60)
-                    download(GL_ASSET_URL, asset, 60)
-                    steps.ok("gitleaks_asset_download_PASS retries=0")
-                steps.start("verify_gitleaks_asset_sha256", 10)
-                if sha256(asset) != GL_ASSET_SHA256:
-                    raise Blocked("gitleaks_asset_sha256_mismatch", "stop_and_reconcile_official_asset", False)
-                steps.ok(f"gitleaks_asset_sha256_{GL_ASSET_SHA256}")
-                gitleaks = safe_extract_gitleaks(asset, private / "gitleaks-bin")
-            validate_gitleaks(gitleaks, private, steps)
-            steps.start("exact_outgoing_bundle_gitleaks", 60)
-            creport = private / "candidate-report.json"
-            cscan = gitleaks_run(gitleaks, candidate, creport, git_mode=False, timeout_s=60)
-            if cscan.returncode != 0 or load_report(creport):
-                raise Blocked("exact_outgoing_gitleaks_failed", "do_not_commit_or_publish_candidate", False)
-            steps.ok("exact_outgoing_gitleaks_PASS findings=0")
-            cache_root = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
-            mirror = cache_root / MIRROR_REL
-            lock = acquire_mirror_lock(mirror.parent / "nagdkl.github.io.mirror.lock")
-            repo = private / "worktree"
-            mirror_used: Path | None = None
-            mirror_used = initialize_mirror(args.repo_url, mirror, private, steps)
-            steps.start("mirror_currentness_fence", 20)
-            local_main = mirror_ref(mirror_used, "refs/heads/main")
-            local_prompt = mirror_ref(mirror_used, f"refs/heads/{args.branch}")
-            if local_main != args.expected_base:
-                raise Blocked("base_drift", "refresh_remote_currentness_before_source_write", False)
-            if local_prompt != args.expected_base:
-                raise Blocked("reserved_branch_drift", "recover_reserved_prompt_branch_read_only", False)
-            remote_prompt = remote_branch_sha_from_url(args.repo_url, args.branch)
-            if remote_prompt != args.expected_base:
-                raise Blocked("reserved_branch_remote_drift", "recover_reserved_prompt_branch_read_only", False)
-            for rel in SOURCE_PATHS:
-                exists = git_bare(mirror_used, ["cat-file", "-e", f"{args.expected_base}:{rel}"], timeout_s=5)
-                if exists.returncode == 0:
-                    raise Blocked("candidate_path_already_exists", "inspect_existing_prompt_lane_before_replay", False)
-            steps.ok(f"mirror_currentness_PASS main={local_main} reserved_branch={local_prompt}")
-
-            steps.start("create_ephemeral_detached_worktree", 30)
-            add_detached_worktree(mirror_used, repo, args.expected_base)
-            head = cp(["git", "rev-parse", "HEAD"], cwd=repo, timeout_s=10).stdout.strip()
-            if head != args.expected_base:
-                raise Blocked("worktree_base_drift", "remove_ephemeral_worktree_and_reconcile_mirror", False)
-            steps.ok(f"ephemeral_worktree_PASS head={head}")
-            steps.start("materialize_exact_write_set", 10)
-            manifest = json.loads((candidate / "bundle-manifest.json").read_text(encoding="utf-8"))["files"]
-            for rel in SOURCE_PATHS:
-                dst = repo / rel; dst.parent.mkdir(parents=True, exist_ok=True); shutil.copyfile(candidate / rel, dst)
-                if sha256(dst) != manifest[rel]:
-                    raise Blocked("post_copy_hash_mismatch", "discard_ephemeral_checkout_and_recover_candidate", False)
-            steps.ok(f"write_set_materialized_paths={len(SOURCE_PATHS)}")
-            steps.start("local_prompt_validation", 45)
-            python_paths = [str(repo / rel) for rel in SOURCE_PATHS if rel.endswith(".py")]
-            compile_result = cp([sys.executable, "-m", "py_compile", *python_paths], timeout_s=30)
-            if compile_result.returncode != 0:
-                raise Blocked("python_compile_failed", "repair_candidate_before_publication", False)
-            validate = cp([sys.executable, SOURCE_PATHS[2]], cwd=repo, timeout_s=15)
-            if validate.returncode != 0:
-                raise Blocked("prompt_validator_failed", "repair_candidate_before_publication", False)
-            tests = cp([sys.executable, "-m", "unittest", "-v", SOURCE_PATHS[3], SOURCE_PATHS[5]], cwd=repo, timeout_s=45)
-            if tests.returncode != 0:
-                raise Blocked("prompt_or_publisher_hostile_tests_failed", "repair_candidate_before_publication", False)
-            diffcheck = cp(["git", "diff", "--check"], cwd=repo, timeout_s=10)
-            if diffcheck.returncode != 0:
-                raise Blocked("git_diff_check_failed", "repair_candidate_before_publication", False)
-            steps.ok("compile_validator_prompt7_publisher5_diffcheck_PASS")
-            steps.start("precommit_worktree_gitleaks", 60)
-            wreport = private / "worktree-report.json"
-            wscan = gitleaks_run(gitleaks, repo, wreport, git_mode=False, timeout_s=60)
-            if wscan.returncode != 0 or load_report(wreport):
-                raise Blocked("precommit_gitleaks_failed", "do_not_commit_candidate", False)
-            steps.ok("precommit_gitleaks_PASS findings=0")
-            steps.start("create_local_commit_after_security_PASS", 30)
-            add = cp(["git", "add", "--", *SOURCE_PATHS], cwd=repo, timeout_s=10)
-            if add.returncode != 0:
-                raise Blocked("git_add_failed", "inspect_ephemeral_checkout", True)
-            staged = cp(["git", "diff", "--cached", "--name-only"], cwd=repo, timeout_s=10)
-            if set(staged.stdout.splitlines()) != set(SOURCE_PATHS):
-                raise Blocked("staged_pathset_mismatch", "discard_ephemeral_checkout_and_reconcile", False)
-            name = cp(["git", "config", "user.name"], cwd=repo, timeout_s=5)
-            email = cp(["git", "config", "user.email"], cwd=repo, timeout_s=5)
-            commit_name = name.stdout.strip() if name.returncode == 0 and name.stdout.strip() else FALLBACK_GIT_NAME
-            commit_email = email.stdout.strip() if email.returncode == 0 and email.stdout.strip() else FALLBACK_GIT_EMAIL
-            commit = cp(["git", "-c", f"user.name={commit_name}", "-c", f"user.email={commit_email}", "commit", "-m", "docs(prompt): add PR5 evidence-currentness continuation v1"], cwd=repo, timeout_s=20)
-            if commit.returncode != 0:
-                raise Blocked("local_commit_failed", "inspect_ephemeral_checkout", False)
-            commit_sha = cp(["git", "rev-parse", "HEAD"], cwd=repo, timeout_s=10).stdout.strip()
-            steps.ok(f"local_commit_{commit_sha}")
-            steps.start("full_reachable_history_gitleaks", 90)
-            hreport = private / "history-report.json"
-            hscan = gitleaks_run(gitleaks, repo, hreport, git_mode=True, timeout_s=90)
-            if hscan.returncode != 0 or load_report(hreport):
-                raise Blocked("full_history_gitleaks_failed", "do_not_push_candidate", False)
-            steps.ok("full_reachable_history_gitleaks_PASS findings=0")
-            steps.start("prepush_remote_currentness_fence", 20)
-            if remote_branch_sha(repo, "main") != args.expected_base:
-                raise Blocked("remote_main_drift_before_push", "refresh_base_and_revalidate_candidate", False)
-            old_branch = remote_branch_sha(repo, args.branch)
-            if old_branch != args.expected_base:
-                raise Blocked("reserved_branch_drift_before_push", "recover_reserved_branch_read_only", False)
-            steps.ok(f"prepush_fence_PASS main={args.expected_base} reserved_branch={old_branch}")
-            pr_url = None
-            if args.publish:
-                push_with_recovery(repo, args.repo_url, args.branch, commit_sha, old_branch, steps)
-                steps.start("postpush_base_currentness_fence", 20)
-                if remote_branch_sha(repo, "main") != args.expected_base:
-                    raise Blocked("base_drift_after_branch_checkpoint", "keep_branch_checkpoint_and_reconcile_before_PR_creation", False)
-                steps.ok(f"postpush_base_fence_PASS main={args.expected_base}")
-                pr_url = create_draft_pr(repo, args.branch, commit_sha, steps, args.gh_bin)
-            else:
-                steps.start("publication_authority", 1); steps.ok("LOCAL_VALIDATION_ONLY no_push no_PR")
-            receipt.update({"status":"PASS","commit":commit_sha,"gitleaks_version":GL_VERSION,"gitleaks_exact_outgoing":"PASS","gitleaks_full_history":"PASS","source_paths":list(SOURCE_PATHS),"pr_url":pr_url})
-            (evidence / "receipt.json").write_text(json.dumps(receipt, sort_keys=True, indent=2)+"\n", encoding="utf-8")
-            steps.start("cleanup_ephemeral_worktree", 20)
-            remove_worktree(mirror_used, repo)
-            steps.ok("ephemeral_worktree_cleanup_PASS mirror_preserved=true")
-            lock.close()
-            print(f"GATE=PASS COMMIT={commit_sha} BRANCH={args.branch} DRAFT_PR={pr_url or 'DEFERRED_TO_CONNECTOR'}")
-            print(f"BREADCRUMBS={evidence}")
-            return 0
-    except Blocked as b:
-        receipt["blocker"]={"reason":b.reason,"next_safe_action":b.next_safe_action,"retry_safe":b.retry_safe}
-        (evidence / "receipt.json").write_text(json.dumps(receipt, sort_keys=True, indent=2)+"\n", encoding="utf-8")
-        steps.blocked(b)
+            private = Path(td)
+            private.chmod(0o700)
+            candidate, gitleaks = _prepare_candidate(args, private, steps)
+            mirror_used, lock = _prepare_mirror(args, private, steps)
+            try:
+                _verify_reserved_lane(args, mirror_used, steps)
+                repo = _create_worktree(args, mirror_used, private, steps)
+                _materialize_candidate(candidate, repo, steps)
+                _validate_candidate(repo, private, gitleaks, steps)
+                commit_sha = _create_verified_commit(repo, private, gitleaks, steps)
+                pr_url = _publish_checkpoint(args, repo, commit_sha, steps)
+                _write_success_receipt(evidence, receipt, commit_sha, pr_url)
+                steps.start("cleanup_ephemeral_worktree", 20)
+                remove_worktree(mirror_used, repo)
+                steps.ok("ephemeral_worktree_cleanup_PASS mirror_preserved=true")
+            finally:
+                lock.close()
+        print(f"GATE=PASS COMMIT={commit_sha} BRANCH={args.branch} DRAFT_PR={pr_url or 'DEFERRED_TO_CONNECTOR'}")
+        print(f"BREADCRUMBS={evidence}")
+        return 0
+    except Blocked as blocked:
+        receipt["blocker"] = {
+            "reason": blocked.reason,
+            "next_safe_action": blocked.next_safe_action,
+            "retry_safe": blocked.retry_safe,
+        }
+        (evidence / "receipt.json").write_text(json.dumps(receipt, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+        steps.blocked(blocked)
 
 if __name__ == "__main__":
     raise SystemExit(main())

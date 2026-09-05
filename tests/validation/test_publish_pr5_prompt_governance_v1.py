@@ -11,7 +11,8 @@ import sys
 
 MODULE_PATH = Path(__file__).resolve().parents[2] / "scripts/human_node/publish_pr5_prompt_governance_v1.py"
 spec = importlib.util.spec_from_file_location("publisher", MODULE_PATH)
-assert spec and spec.loader
+assert spec is not None
+assert spec.loader is not None
 publisher = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = publisher
 spec.loader.exec_module(publisher)
