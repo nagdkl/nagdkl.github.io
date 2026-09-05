@@ -1,0 +1,11 @@
+{
+  "docs/research/pages-terminal-loss-recovery-aqa.v2.yaml": "cbb3bc24435644ca6d62740e47869c91bf448a7162fa4b579061163ec405d0da",
+  "docs/research/pages-terminal-loss-recovery-donors.v2.yaml": "5e2e4c935037d49a80926ee1f37010a82e7d0433d464291491f13eb6089571d7",
+  "docs/runbooks/pages-terminal-loss-recovery-v2.md": "bc2228eb209f012992a19576366bb841595bdd0937b24bfd5f50f2dcac42cf31",
+  "scripts/bootstrap_publish_pages_recovery_v2.py": "c6f1707c9babf583e00fc417c4bd3274b4a8bc37566867c8662a3e05225e9f2a",
+  "scripts/recover_pages_after_terminal_loss_v2.py": "ecd5b0f55eca989af0456f3a705c71ce2fc438bffc5322b979988bce570cdb3b",
+  "scripts/run_pages_recovery_v4.py": "8eda0f921a7d6f3bb8a20d1411ce236888c00e2ce2b09be3cec2e7245b270c43",
+  "tests/test_bootstrap_publish_pages_recovery_v2.py": "5f7011d998fc1a68552efa764706137b335897ab30932d39b200b68b8a3c923d",
+  "tests/test_recover_pages_after_terminal_loss_v2.py": "3b221a4f7078ece9fb2ba6372750f78130ed452d0c8e52e7bfa426084b564e66",
+  "tests/test_run_pages_recovery_v4.py": "26186e7b555ab9d269ae0e2bb652bb0237b68142ee02ae2cf3071f2b71f0d71a"
+}
