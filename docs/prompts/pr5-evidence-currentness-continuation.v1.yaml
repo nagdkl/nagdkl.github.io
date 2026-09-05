@@ -1,0 +1,449 @@
+{
+  "prompt": {
+    "metadata": {
+      "schema": "synergy.pages.pr5-evidence-currentness-continuation/v1",
+      "version": "1.0.0",
+      "prompt_id": "PAGES-PR5-EVIDENCE-CURRENTNESS-N1",
+      "language": "en",
+      "repository": "nagdkl/nagdkl.github.io",
+      "pull_request": 5,
+      "selected_lane": "PR5-EVIDENCE-CURRENTNESS-RECONCILIATION",
+      "generated_for": "next_message_in_same_chat",
+      "execute_in_generation_message": false,
+      "automatic_retries": 0
+    },
+    "mission": {
+      "goal": "Reconcile only the stale Git-backed machine-readable evidence in PR #5 with the already-proven WSL2 Gitleaks v8.30.1 publication receipt, preserving the recovery implementation, current Draft authority, and all parallel work.",
+      "minimum_useful_outcome": "A single follow-up commit changes only the evidence files that are demonstrably stale plus their integrity manifest, passes bounded validation and canonical Gitleaks gates, is pushed with exact-head recovery/readback, and leaves the PR Draft unless separate review authority explicitly changes that state.",
+      "do_not_restart_lane": true,
+      "do_not_ask_user_to_choose_lane_when_context_is_sufficient": true
+    },
+    "canonical_full_read_gate": {
+      "required_before_execution": true,
+      "fail_closed_on_gap": true,
+      "sources": [
+        {
+          "repository": "nagdkl-lab/control_plane",
+          "path": "ssot/synergy/chat-bootstrap.v1.yaml",
+          "ref": "main",
+          "observed_blob": "81c1f89e0a8460e9ab89d5e40c532a96957459c0",
+          "document_version": "1.6.0",
+          "read": "BOF_TO_EOF_PLUS_EMPTY_OVERREAD"
+        },
+        {
+          "repository": "nagdkl-lab/control_plane",
+          "path": "ssot/synergy/mid_chat_synergy_prompt_generator.md",
+          "ref": "75b86c20b073bd7803784d42e8b172c61566aaad",
+          "observed_blob": "80de85788f6a3b1ea849d10ce6386985691b851c",
+          "read": "BOF_TO_EOF_PLUS_EMPTY_OVERREAD"
+        }
+      ],
+      "required_report_fields": [
+        "exact_file",
+        "ref_or_version",
+        "top_level_sections",
+        "first_marker",
+        "final_marker",
+        "eof_reached",
+        "missing_or_unreadable_ranges"
+      ]
+    },
+    "verified_starting_tuple": {
+      "base_main": "0e872af12b2aee39bc06df49bedf4e5a3179dbdc",
+      "pr_head": "f49db14d1bfa727dbfd024a94bea7fbb85e70ae0",
+      "branch": "recovery/pages-terminal-loss-v4-20260905",
+      "pr_state": "OPEN_DRAFT",
+      "changed_path_count": 10,
+      "stale_evidence_paths": [
+        "docs/research/pages-terminal-loss-recovery-aqa.v2.yaml",
+        "docs/research/pages-terminal-loss-recovery-donors.v2.yaml"
+      ],
+      "integrity_path": "docs/research/pages-terminal-loss-recovery-manifest.v2.json",
+      "canonical_wsl2_security_receipt": {
+        "python": "3.14.4",
+        "gitleaks_version": "8.30.1",
+        "gitleaks_asset_sha256": "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb",
+        "positive_canary_findings": 1,
+        "negative_canary_findings": 0,
+        "exact_outgoing_findings": 0,
+        "precommit_findings": 0,
+        "full_history_findings": 0,
+        "remote_branch_readback": "PASS",
+        "postpush_base_currentness": "PASS"
+      }
+    },
+    "prompt_list_improvement": {
+      "objective": "Turn the raw instruction list into an executable contract with less repetition, stronger precedence, explicit evidence semantics, and smaller recovery-safe units.",
+      "transformations": [
+        "Deduplicate repeated local-environment, timeout, preservation, and reuse laws into single canonical invariants referenced by later sections.",
+        "Separate immutable verified facts from currentness-sensitive observations, assumptions, heuristics, and unresolved items.",
+        "Replace vague superlatives such as world-class or maximum-quality with measurable acceptance criteria where possible.",
+        "Use MUST/SHOULD/MAY semantics and explicit authority boundaries instead of prose that can be interpreted as self-granted permission.",
+        "Require one active mutation nano-step at a time; allow parallelism only for bounded read-only or provably path-disjoint work.",
+        "Make candidate-count proportional to gap significance: one proven donor for trivial atoms; three to seven materially distinct candidates only for architecture-significant gaps.",
+        "Require every started step to end in exactly one terminal state and a remote checkpoint/readback when the step mutates durable state.",
+        "Treat timeout or ambiguous write outcome as UNKNOWN and require bounded read-only recovery before any replay.",
+        "Keep executable source in Git; chat, issue bodies, and comments are evidence or pointers, not the canonical executable source.",
+        "Require exact source identity, license/provenance/security/maintenance/dependency-weight review before adopting OSS; prefer pattern reuse over new dependency for small gaps.",
+        "Keep Human Node output minimal: request only terminal status, breadcrumbs, and bounded evidence that tools cannot retrieve directly.",
+        "Use numerators/denominators for percentages; never turn unmeasured work into numeric readiness credit."
+      ]
+    },
+    "lane_selection": {
+      "method": "weighted_score_then_hard_vetoes",
+      "weights": {
+        "goal_alignment": 0.18,
+        "unblock_value": 0.16,
+        "verifiability": 0.14,
+        "parallel_independence": 0.12,
+        "reversibility": 0.1,
+        "reuse_fit": 0.1,
+        "low_conflict_risk": 0.08,
+        "learning_value": 0.06,
+        "low_error_cost": 0.06
+      },
+      "hard_vetoes": [
+        "default_branch_drift",
+        "same_semantic_writer",
+        "path_collision",
+        "secret_detection",
+        "unknown_mutation_outcome",
+        "unread_ssot_range",
+        "missing_exact_head_binding"
+      ],
+      "tie_breakers": [
+        "smallest_touch_surface",
+        "strongest_exact_evidence",
+        "fewest_new_dependencies",
+        "shortest_path_to_remote_checkpoint"
+      ]
+    },
+    "council": {
+      "minimum_quorum": 4,
+      "roles": [
+        {
+          "role": "LLM Prompt Architecture Lead",
+          "decision_focus": "instruction precedence, ambiguity, contract shape",
+          "veto_conditions": [
+            "contradictory_instructions",
+            "unbounded_autonomy"
+          ]
+        },
+        {
+          "role": "SRE / Recovery Engineer",
+          "decision_focus": "timeouts, terminal states, recovery, checkpoints",
+          "veto_conditions": [
+            "silent_retry",
+            "ambiguous_replay",
+            "active_step_at_turn_end"
+          ]
+        },
+        {
+          "role": "Verification / AQA Lead",
+          "decision_focus": "evidence sufficiency and hostile tests",
+          "veto_conditions": [
+            "cross_crediting",
+            "write_success_as_correctness"
+          ]
+        },
+        {
+          "role": "Application / Supply-Chain Security Lead",
+          "decision_focus": "Gitleaks, provenance, secret safety, authority",
+          "veto_conditions": [
+            "unscanned_commit",
+            "secret_exposure",
+            "self_granted_merge_authority"
+          ]
+        },
+        {
+          "role": "Knowledge / Documentation Architect",
+          "decision_focus": "Git-backed reusable memory and machine-readable evidence",
+          "veto_conditions": [
+            "chat_only_canonical_artifact",
+            "stale_evidence_presented_as_current"
+          ]
+        }
+      ]
+    },
+    "reuse_policy": {
+      "order": [
+        "exact_current_repo_atom",
+        "active_synergy_ssot",
+        "sibling_synergy_donor",
+        "existing_project_dependency",
+        "mature_oss_pattern",
+        "public_engineering_reference",
+        "minimal_adapter",
+        "new_code_last"
+      ],
+      "material_gap_candidate_count": {
+        "min": 3,
+        "max": 7
+      },
+      "trivial_atom_candidate_count": 1,
+      "no_dependency_when_no_measured_gap": true,
+      "authority_does_not_transfer_with_reuse": true
+    },
+    "external_candidate_policy": {
+      "evaluated_patterns": [
+        {
+          "candidate": "promptfoo",
+          "use": "REFERENCE_ONLY",
+          "pattern": "declarative assertions and regression evals",
+          "dependency_adoption": false
+        },
+        {
+          "candidate": "DSPy",
+          "use": "REFERENCE_ONLY",
+          "pattern": "metric-driven optimization",
+          "dependency_adoption": false,
+          "reason": "no frozen labelled metric/dataset is needed for this three-path evidence repair"
+        },
+        {
+          "candidate": "Microsoft PyRIT",
+          "use": "REFERENCE_ONLY",
+          "pattern": "hostile/adversarial case taxonomy",
+          "dependency_adoption": false
+        },
+        {
+          "candidate": "NASA SWEHB verification/validation guidance",
+          "use": "REFERENCE_ONLY",
+          "pattern": "explicit methods, acceptance evidence, traceability, conflict validation",
+          "dependency_adoption": false
+        }
+      ],
+      "adoption_requires": [
+        "exact_upstream_identity",
+        "license_compatibility",
+        "provenance",
+        "maintenance_signal",
+        "security_review",
+        "dependency_weight",
+        "stack_compatibility",
+        "deterministic_testability",
+        "rollback_or_removal_path"
+      ]
+    },
+    "git_safety": {
+      "direct_main_write": false,
+      "force_push": false,
+      "shared_mutable_branch": false,
+      "preserve_unknown_parallel_work": true,
+      "fresh_main_and_pr_head_before_each_write": true,
+      "declare_exact_write_set_before_write": true,
+      "expected_head_binding_for_merge": true,
+      "gitleaks_before_every_commit": true,
+      "github_actions_acceptance_credit": false,
+      "local_execution_model": "REMOTE_GITHUB_SSOT_THEN_CANONICAL_BARE_MIRROR_THEN_EPHEMERAL_DETACHED_WORKTREE",
+      "full_clone_policy": "ONLY_CACHE_MISS_CORRUPTION_OR_UNTRUSTED_STATE",
+      "clone_every_nanostep": false,
+      "canonical_mirror_path": "${XDG_CACHE_HOME:-~/.cache}/synergy/git-mirrors/nagdkl.github.io.git",
+      "mirror_concurrency": "NONBLOCKING_KERNEL_FLOCK_ZERO_RETRY",
+      "worktree_policy": "one_ephemeral_detached_worktree_per_mutation_evidence_boundary"
+    },
+    "timeout_policy_seconds": {
+      "local_identity_or_parse": 5,
+      "github_metadata_read": 10,
+      "github_search": 15,
+      "github_write": 15,
+      "exact_readback": 15,
+      "focused_unit_test": 30,
+      "focused_suite": 60,
+      "gitleaks_candidate": 60,
+      "gitleaks_history": 90,
+      "git_clone_or_fetch": 60,
+      "automatic_retries": 0,
+      "mirror_refresh": 45,
+      "worktree_create": 30,
+      "worktree_cleanup": 20
+    },
+    "execution_protocol": {
+      "cycle": [
+        "OBSERVE",
+        "DIAGNOSE",
+        "SELECT_NANOSTEP",
+        "DECLARE_WRITE_SET",
+        "VALIDATE_PRECONDITIONS",
+        "CHANGE",
+        "TARGETED_VALIDATE",
+        "READBACK",
+        "REMOTE_CHECKPOINT",
+        "EXACT_READBACK",
+        "REASSESS"
+      ],
+      "one_active_mutation_nano_step": true,
+      "terminal_states": [
+        "STEP_OK",
+        "STEP_FAIL",
+        "STEP_BLOCKED",
+        "STEP_TIMEOUT",
+        "STEP_UNKNOWN"
+      ],
+      "exactly_one_terminal_per_started_step": true,
+      "timeout_or_unknown": "STOP_AND_READ_ONLY_RECOVER",
+      "absence_of_output_is_success": false,
+      "hierarchy": "goal > capability > subsystem > workflow > task > atomic_step > nanostep > evidence_atom",
+      "decompose_until_each_mutation_is_single_purpose_and_independently_readbackable": true
+    },
+    "nano_steps": [
+      {
+        "id": "N0",
+        "parent": "currentness",
+        "action": "Fresh-read main, PR #5 head/base/draft state, complete changed paths, and same-semantic writers; stop on drift/collision.",
+        "mutation_class": "READ_ONLY",
+        "timeout_s": 30,
+        "checkpoint": "chat_step_ledger"
+      },
+      {
+        "id": "N1",
+        "parent": "authority",
+        "action": "FULL_READ the exact active SSOT files through EOF and report identity/ranges before mutation.",
+        "mutation_class": "READ_ONLY",
+        "timeout_s": 45,
+        "checkpoint": "chat_step_ledger"
+      },
+      {
+        "id": "N2",
+        "parent": "evidence",
+        "action": "Read exact preimages of the two stale YAML files and integrity manifest at PR head; prove the stale statements and freeze their blob SHAs.",
+        "mutation_class": "READ_ONLY",
+        "timeout_s": 30,
+        "checkpoint": "chat_step_ledger"
+      },
+      {
+        "id": "N3",
+        "parent": "repair",
+        "action": "Build only the three-path evidence-currentness patch; preserve historical pre-run facts as provenance and append/replace only statements whose currentness changed.",
+        "mutation_class": "LOCAL_EPHEMERAL",
+        "timeout_s": 30,
+        "checkpoint": "content_addressed_local_bundle"
+      },
+      {
+        "id": "N4",
+        "parent": "validation",
+        "action": "Validate UTF-8/JSON-or-YAML syntax, manifest hashes, reconciliation-relevant invariants, and the full existing 23-test suite on the exact candidate when the execution surface can complete it within bounds.",
+        "mutation_class": "LOCAL_EPHEMERAL",
+        "timeout_s": 90,
+        "checkpoint": "sanitized_test_receipt"
+      },
+      {
+        "id": "N5",
+        "parent": "security",
+        "action": "Run pinned Gitleaks 8.30.1 identity check, positive/negative canaries, and exact outgoing worktree scan; findings must be zero for the candidate.",
+        "mutation_class": "LOCAL_EPHEMERAL",
+        "timeout_s": 90,
+        "checkpoint": "sanitized_gitleaks_receipt"
+      },
+      {
+        "id": "N6",
+        "parent": "commit",
+        "action": "Re-read remote main/head and branch identity; if unchanged, create one follow-up commit changing exactly the three declared paths.",
+        "mutation_class": "WRITE",
+        "timeout_s": 30,
+        "checkpoint": "remote_commit_sha"
+      },
+      {
+        "id": "N7",
+        "parent": "security",
+        "action": "Run full reachable-history Gitleaks on the new local commit before push.",
+        "mutation_class": "LOCAL_EPHEMERAL",
+        "timeout_s": 90,
+        "checkpoint": "sanitized_history_scan_receipt"
+      },
+      {
+        "id": "N8",
+        "parent": "push",
+        "action": "Pre-push currentness fence; push only the follow-up commit with zero retry; ambiguous outcome becomes STEP_UNKNOWN and requires read-only branch recovery.",
+        "mutation_class": "WRITE",
+        "timeout_s": 60,
+        "checkpoint": "remote_branch_exact_sha"
+      },
+      {
+        "id": "N9",
+        "parent": "readback",
+        "action": "Exact-readback PR head, base, Draft state, complete changed paths, and the three reconciled Git blobs; verify manifest hashes match repository bytes.",
+        "mutation_class": "READ_ONLY",
+        "timeout_s": 45,
+        "checkpoint": "github_exact_readback"
+      },
+      {
+        "id": "N10",
+        "parent": "review",
+        "action": "Perform skeptical semantic review: verified facts vs inference, stale claims eliminated, no authority widening, no unrelated source changes.",
+        "mutation_class": "READ_ONLY",
+        "timeout_s": 45,
+        "checkpoint": "review_receipt"
+      },
+      {
+        "id": "N11",
+        "parent": "authority",
+        "action": "Stop with PR still Draft unless separate human/reviewer authority explicitly authorizes a state transition; never self-merge.",
+        "mutation_class": "READ_ONLY",
+        "timeout_s": 10,
+        "checkpoint": "final_lane_state"
+      }
+    ],
+    "artifact_policy": {
+      "git_is_primary_recovery_source": true,
+      "canonical_executable_source_must_be_git_backed": true,
+      "chat_and_issue_comments_are_not_primary_executable_storage": true,
+      "research_language": "English",
+      "machine_readable_research_required": true,
+      "file_library_and_google_drive_are_secondary_backups": true,
+      "canonical_human_node_publisher_path": "scripts/human_node/publish_pr5_prompt_governance_v1.py",
+      "publisher_test_path": "tests/validation/test_publish_pr5_prompt_governance_v1.py",
+      "temporary_bootstrap_may_be_chat_or_backup_only_until_first_gitleaks_gated_commit": true
+    },
+    "human_node_policy": {
+      "use_only_for_unavailable_execution_surface": true,
+      "canonical_git_artifact_first": true,
+      "single_one_click_block_when_needed": true,
+      "minimum_return": [
+        "terminal_status",
+        "last_confirmed",
+        "breadcrumbs",
+        "exact_head_if_created",
+        "blocker_code_if_any"
+      ],
+      "do_not_request": [
+        "credentials",
+        "tokens",
+        "raw_secret_findings",
+        "system_prompts"
+      ]
+    },
+    "authority": {
+      "draft": true,
+      "ready": false,
+      "merge": false,
+      "runtime": false,
+      "release": false,
+      "deployment": false,
+      "production": false,
+      "certification": false
+    },
+    "stop_conditions": [
+      "FULL_READ_INCOMPLETE",
+      "DEFAULT_BRANCH_DRIFT",
+      "PR_HEAD_DRIFT",
+      "PATH_OR_SEMANTIC_COLLISION",
+      "GITLEAKS_FINDING",
+      "UNKNOWN_MUTATION_OUTCOME",
+      "SECRET_OR_PRIVATE_DATA_EXPOSURE",
+      "UNDEFINED_SAFE_NEXT_STEP"
+    ],
+    "definition_of_done": [
+      "three_path_evidence_repair_only",
+      "bounded_validation_pass",
+      "gitleaks_pass",
+      "single_followup_commit",
+      "remote_exact_readback",
+      "machine_readable_evidence_current",
+      "parallel_work_preserved",
+      "pr_remains_draft_without_separate_authority"
+    ],
+    "execution_start": {
+      "instruction": "Execute N0 only first, terminalize it, checkpoint/readback, then reassess before N1."
+    }
+  }
+}

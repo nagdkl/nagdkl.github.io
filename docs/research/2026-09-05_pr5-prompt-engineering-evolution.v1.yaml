@@ -1,0 +1,288 @@
+{
+  "schema": "synergy.pages.pr5-prompt-engineering-research/v1",
+  "version": "1.0.0",
+  "language": "en",
+  "lane": {
+    "repository": "nagdkl/nagdkl.github.io",
+    "pull_request": 5,
+    "purpose": "improve the continuation instruction list and drive the smallest safe evidence-currentness reconciliation"
+  },
+  "full_read": {
+    "status": "FULL_READ_OK",
+    "sources": [
+      {
+        "repository": "nagdkl-lab/control_plane",
+        "path": "ssot/synergy/chat-bootstrap.v1.yaml",
+        "ref": "main",
+        "blob": "81c1f89e0a8460e9ab89d5e40c532a96957459c0",
+        "document_version": "1.6.0",
+        "eof": "confirmed_by_empty_401_800_overread"
+      },
+      {
+        "repository": "nagdkl-lab/control_plane",
+        "path": "ssot/synergy/mid_chat_synergy_prompt_generator.md",
+        "ref": "75b86c20b073bd7803784d42e8b172c61566aaad",
+        "blob": "80de85788f6a3b1ea849d10ce6386985691b851c",
+        "eof": "confirmed_by_empty_801_1200_overread"
+      }
+    ],
+    "missing_or_unreadable_ranges": []
+  },
+  "synergy_donors": [
+    {
+      "repository": "nagdkl-lab/schema_tools",
+      "path": "docs/prompts/schema-tools-synergy-continuation-prompt-evolution.v1.yaml",
+      "ref": "2bf7002d47d2edcab8deda56e68266ac4ef12097",
+      "blob": "7a16978f1543dd7a0e2056a890992fd713e1a9b4",
+      "decision": "ADAPT_PATTERN",
+      "reused": [
+        "versioned prompt contract",
+        "weighted lane selection",
+        "candidate policy",
+        "zero retry",
+        "currentness fences",
+        "machine-readable artifact policy"
+      ]
+    },
+    {
+      "repository": "nagdkl-lab/schema_tools",
+      "path": "scripts/validation/validate_schema_tools_continuation_prompt_v2.py",
+      "ref": "2bf7002d47d2edcab8deda56e68266ac4ef12097",
+      "decision": "ADAPT_SMALL_SUBSET",
+      "reused": [
+        "stdlib-only bounded file read",
+        "closed critical invariants",
+        "hostile mutation testing"
+      ]
+    },
+    {
+      "repository": "nagdkl-lab/prompt_ops",
+      "pull_request": 1206,
+      "decision": "REFERENCE",
+      "reused": [
+        "private state root",
+        "immutable SHA binding",
+        "bounded execution",
+        "Python adapter",
+        "terminal-left-open pattern"
+      ]
+    },
+    {
+      "repository": "nagdkl-lab/control_plane",
+      "issue": 1620,
+      "decision": "REFERENCE",
+      "reused": [
+        "fail-closed pre-remote Gitleaks",
+        "zero automatic retries"
+      ]
+    },
+    {
+      "repository": "nagdkl-lab/mcp_vm_control",
+      "issue": 823,
+      "decision": "REFERENCE",
+      "reused": [
+        "read-only recovery after ambiguous transport",
+        "scanner identity and canaries"
+      ]
+    }
+  ],
+  "external_candidates": [
+    {
+      "name": "promptfoo",
+      "category": "OSS",
+      "observed": "current open-source prompt/eval/red-team tooling; MIT",
+      "decision": "REFERENCE_ONLY",
+      "reason": "declarative assertions and regression-test pattern are useful; adding a runtime dependency would widen the lane"
+    },
+    {
+      "name": "DSPy",
+      "category": "OSS_research_framework",
+      "decision": "REFERENCE_ONLY",
+      "reason": "metric-driven prompt optimization is powerful but no frozen labelled dataset/metric exists for this small evidence-reconciliation lane"
+    },
+    {
+      "name": "Microsoft PyRIT",
+      "category": "OSS",
+      "license": "MIT",
+      "decision": "REFERENCE_ONLY",
+      "reason": "hostile/red-team taxonomy is useful; framework adoption is disproportionate to the gap"
+    },
+    {
+      "name": "NASA Software Engineering Handbook SWE-028/SWE-055",
+      "category": "public_engineering_guidance",
+      "decision": "REFERENCE_ONLY",
+      "reason": "supports explicit verification methods, acceptance evidence, traceability, and validation of conflicting requirements"
+    },
+    {
+      "name": "NASA cFS/F Prime/Open MCT",
+      "category": "public_sector_OSS",
+      "decision": "NOT_APPLICABLE_NO_MEASURED_GAP",
+      "reason": "component/runtime/UI architecture is outside this prompt/evidence lane"
+    }
+  ],
+  "selection_criteria": {
+    "maturity": true,
+    "support_signal": true,
+    "license": true,
+    "security": true,
+    "portability": true,
+    "reproducibility": true,
+    "observability": true,
+    "recovery": true,
+    "maintenance_burden": true,
+    "dependency_footprint": true,
+    "synergy_compatibility": true,
+    "deterministic_testing": true,
+    "integration_cost": true,
+    "replaceability": true
+  },
+  "prompt_engineering_findings": [
+    {
+      "finding": "high repetition",
+      "repair": "centralize canonical invariants and reference them instead of restating them"
+    },
+    {
+      "finding": "mixed authority and execution language",
+      "repair": "separate facts, policy, permission, authority, and requested outcome"
+    },
+    {
+      "finding": "candidate search can become ceremony",
+      "repair": "scale candidate count by materiality; 3-7 only for architectural gaps"
+    },
+    {
+      "finding": "superlatives are not acceptance criteria",
+      "repair": "pair quality language with measurable evidence and stop conditions"
+    },
+    {
+      "finding": "local-state warnings are repeated but recovery tuple is not always explicit",
+      "repair": "make remote checkpoint + exact readback part of every mutation completion"
+    },
+    {
+      "finding": "timeouts sometimes conflict with retries",
+      "repair": "global zero-retry from active SSOT; timeout becomes terminal until diagnosis"
+    },
+    {
+      "finding": "chat-only code risk",
+      "repair": "Git-backed canonical source; chat only contains bounded launcher when Human Node is necessary"
+    }
+  ],
+  "constraints": {
+    "automatic_retries": 0,
+    "direct_main_write": false,
+    "force_push": false,
+    "github_actions_acceptance": false,
+    "current_pr_stays_draft": true,
+    "one_active_mutation": true
+  },
+  "assumptions": [
+    "PR #5 remains the selected implementation lane",
+    "the canonical Human Node Gitleaks receipt reported in this chat is accepted as evidence for reconciliation but must be persisted in Git-backed machine-readable evidence before Ready consideration"
+  ],
+  "known_unknowns": [
+    "Whether an independent reviewer will authorize Ready after evidence reconciliation",
+    "Whether current main or PR head drifts before the follow-up commit"
+  ],
+  "risks": [
+    "parallel writer changes main or PR head",
+    "evidence repair accidentally rewrites historical provenance",
+    "new prompt artifact widens PR #5 if placed on the same branch",
+    "prompt complexity becomes ceremony rather than behavior"
+  ],
+  "security_considerations": [
+    "Gitleaks before every commit",
+    "no raw scanner findings or credentials in public artifacts",
+    "exact asset/version identity",
+    "ambiguous write requires read-only recovery"
+  ],
+  "compatibility": {
+    "human_node": "WSL2 Ubuntu 24/26 and compatible Debian-like environments",
+    "runtime_prompt_validation": "Python 3 stdlib only",
+    "current_working_directory": "arbitrary and possibly dirty unrelated Git repo"
+  },
+  "timeout_policy_seconds": {
+    "local": 5,
+    "github_read": 10,
+    "github_search": 15,
+    "github_write": 15,
+    "focused_test": 30,
+    "focused_suite": 60,
+    "gitleaks_candidate": 60,
+    "gitleaks_history": 90,
+    "automatic_retries": 0,
+    "mirror_initialization": 60,
+    "mirror_refresh": 45,
+    "worktree_create": 30,
+    "worktree_cleanup": 20
+  },
+  "reproducibility": [
+    "exact Git blob/ref binding",
+    "JSON-compatible YAML prompt contract",
+    "stdlib validator",
+    "deterministic hostile tests",
+    "remote exact readback"
+  ],
+  "recovery_strategy": [
+    "GitHub is primary source of truth",
+    "terminalize each step before turn boundary",
+    "recover UNKNOWN writes with read-only remote state",
+    "secondary byte backups may use File Library and Google Drive",
+    "reuse a validated canonical bare mirror when available",
+    "preserve an invalid mirror and use a run-local fresh fallback rather than deleting unknown state",
+    "use ephemeral detached worktrees for mutation/evidence boundaries and remove them only after durable remote checkpoint readback"
+  ],
+  "evidence": {
+    "pr5_base": "0e872af12b2aee39bc06df49bedf4e5a3179dbdc",
+    "pr5_head": "f49db14d1bfa727dbfd024a94bea7fbb85e70ae0",
+    "pr5_state": "OPEN_DRAFT",
+    "pr5_changed_paths": 10,
+    "wsl2_gitleaks": "PASS",
+    "git_backed_currentness_blocker": "two YAML files plus integrity manifest",
+    "publisher_sandbox_e2e": "PASS_15_STEPS_LOCAL_BARE_REMOTE_FAKE_GITLEAKS_FAKE_GH",
+    "publisher_hostile_wrong_bundle": "PASS_EXIT_78",
+    "publisher_hostile_reserved_branch_drift": "PASS_EXIT_78_REMOTE_UNCHANGED"
+  },
+  "remaining_blockers": [
+    "prompt/research/validator lane itself must pass Gitleaks before its Git commit",
+    "PR #5 evidence reconciliation follow-up still needs full WSL2 suite + Gitleaks + commit/push/readback"
+  ],
+  "next_safe_steps": [
+    "validate the new prompt contract locally",
+    "Gitleaks-scan exact 6-path prompt lane",
+    "publish it on a disjoint Draft PR",
+    "then execute the generated prompt in the next message, starting at N0"
+  ],
+  "artifact_strategy": {
+    "git_backed_human_node_publisher": "scripts/human_node/publish_pr5_prompt_governance_v1.py",
+    "publisher_test": "tests/validation/test_publish_pr5_prompt_governance_v1.py",
+    "bootstrap_self_reference_avoidance": "publisher requires outer bundle SHA as explicit argument; it does not pin the hash of the bundle that contains itself"
+  },
+  "architectural_decisions": [
+    {
+      "id": "LOCAL-GIT-EXECUTION-001",
+      "decision": "ACCEPT_NATIVE_GIT_BARE_MIRROR_PLUS_EPHEMERAL_WORKTREE",
+      "rationale": [
+        "remote GitHub remains the recovery SSOT",
+        "a reusable local bare mirror avoids full repository clone on every nanostep",
+        "detached worktrees isolate writes from arbitrary dirty caller repositories",
+        "native git avoids a new Python Git dependency and preserves existing proven push/currentness semantics",
+        "fresh mirror clone remains allowed only for cache miss, corruption fallback, or untrusted local state"
+      ],
+      "concurrency": "nonblocking fcntl.flock; kernel releases lock on process exit; automatic retries remain zero",
+      "rejected_candidates": [
+        {
+          "candidate": "fresh clone every nanostep",
+          "reason": "safe but unnecessary network/disk cost and weaker local reuse"
+        },
+        {
+          "candidate": "Dulwich",
+          "reason": "capable pure-Python Git implementation but unnecessary new dependency for native Git operations already required"
+        },
+        {
+          "candidate": "pygit2/libgit2",
+          "reason": "capable bindings but adds native dependency and ABI/maintenance surface without a measured lane gap"
+        }
+      ],
+      "external_reference": "https://git-scm.com/docs/git-worktree"
+    }
+  ]
+}
