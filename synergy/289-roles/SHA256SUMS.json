@@ -1,0 +1,18 @@
+{
+  "app.js": {
+    "bytes": 5266,
+    "sha256": "b105ede6cd2978bb0e93b5126942a4cd1e48a9c9748748d0040b40d3b490f326"
+  },
+  "diagram.mmd": {
+    "bytes": 22914,
+    "sha256": "1dec3e9fe07a80829735bfb26e06ec4dea86b760588e52cbe7f280b2fbf86933"
+  },
+  "index.html": {
+    "bytes": 6688,
+    "sha256": "a2a47ac684c8c1a7666b343f44410f467651cccbc824908d5568afbe70819a23"
+  },
+  "research.v1.yaml": {
+    "bytes": 1372,
+    "sha256": "2fe3b34724711ed58d6b5b4b01a2689ca56a21b463fa65367b4b8c154e83c263"
+  }
+}
