@@ -1,0 +1,58 @@
+schema: synergy.pages_terminal_loss_recovery_aqa/v2
+repository: nagdkl/nagdkl.github.io
+publication_commit: 0e872af12b2aee39bc06df49bedf4e5a3179dbdc
+sandbox_runtime:
+  python: 3.13.5
+  pytest: 9.0.2
+  uv: 0.10.0
+validation:
+  python_compile: PASS
+  pytest_unit_and_hostile: 23/23_PASS
+  read_only_verifier_cases: 10/10_PASS
+  publication_bootstrap_cases: 8/8_PASS
+  local_e2e_validation_only: PASS_12_STEPS
+  local_e2e_publish_simulation: PASS_15_STEPS
+  arbitrary_cwd_dirty_repo_untouched: PASS
+  safe_rerun: PASS
+  subprocess_timeout_fail_closed: PASS
+  missing_git_fail_closed: PASS
+  exact_head_drift_fail_closed: PASS
+  live_marker_missing_fail_closed: PASS
+  unsafe_tar_member_rejected: PASS
+  no_recursive_windows_user_tree_search: PASS
+  no_shell_true_or_os_system: PASS
+  no_force_push_or_direct_main_ref: PASS
+  remote_branch_exact_readback_simulated: PASS
+  draft_pr_exact_readback_simulated: PASS
+  remote_main_currentness_fence_pre_push: PASS
+  remote_main_currentness_fence_post_push: PASS
+  hard_wall_clock_download_timeout: PASS_SOURCE_AND_UNIT_GUARD
+security:
+  conservative_secret_pattern_scan: PASS_FINDINGS_0
+  gitleaks_exact_outgoing_v8_30_1: NOT_RUN_ENVIRONMENT
+  gitleaks_credit_from_fallback: false
+  gitleaks_positive_negative_canary_path: IMPLEMENTED_AND_FAKE_SCANNER_AQA_PASS
+  raw_secret_values_public: false
+publication_authority:
+  source_branch: BLOCKED_PENDING_REAL_GITLEAKS_V8_30_1_V4
+  draft_pr: BLOCKED_PENDING_REAL_GITLEAKS_V8_30_1_V4
+  direct_main_write: false
+  force_push: false
+  merge: false
+  runtime: false
+  release: false
+  deployment: false
+known_limitations:
+  - ChatGPT sandbox cannot download the official Gitleaks asset due outbound DNS/network restrictions.
+  - Actual Gitleaks CLI compatibility for the canary/report flags is therefore gated by the fresh WSL2 run.
+git_native_v4_launcher:
+  sandbox_compile: PASS
+  arbitrary_dirty_cwd_untouched: PASS
+  missing_git_fail_closed: PASS
+  invalid_identity_fail_closed: PASS
+  bounded_clone_failure_typed: PASS
+parallel_writer_disjoint_reconciliation:
+  pr4_changed_path_overlap: 0
+  hse_index_blob_unchanged: PASS
+  hse_layout_blob_unchanged: PASS
+  exact_base_rebound: PASS
