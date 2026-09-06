@@ -177,6 +177,26 @@ assumptions:
   - gh_auth_remains_available_on_Human_Node
 known_unknowns:
   - whether_Sonar_emits_new_findings_after_repair
+sonar_followup_after_commit_45a42a7:
+  prior_head: 45a42a76738020ecfb91aba1a1cafc9c1d70ffc3
+  prior_Sonar_check_run: 101395442062
+  prior_quality_gate: FAILURE
+  prior_security_rating: E
+  annotations_count: 5
+  scope: reusable_repair_runner_only
+  findings:
+    - patch_prompt_test_path_construction
+    - patch_publisher_test_path_construction
+    - install_verified_cache_file_complexity_19
+    - prepare_gitleaks_complexity_16
+    - sonar_readback_complexity_30
+  selected_repair:
+    - canonicalize_and_confine_fixed_worktree_paths_before_file_IO
+    - split_cache_install_into_single_purpose_helpers
+    - split_Gitleaks_cache_binary_canary_phases
+    - split_Sonar_poll_sanitize_failure_recording_phases
+  dependency_change: none
+  old_six_findings_status: closed_by_45a42a7
 authority:
   draft: true
   ready: false
@@ -751,8 +771,62 @@ def replace_between(source: str, start: str, end: str, replacement: str) -> str:
     return source[:left] + replacement.rstrip() + "\n\n" + source[right:]
 
 
-def patch_publisher(path: Path) -> None:
-    source = path.read_text(encoding="utf-8")
+@dataclass(frozen=True, slots=True)
+class RepairWorkspace:
+    root: Path
+    publisher: Path
+    validator: Path
+    prompt_test: Path
+    publisher_test: Path
+
+
+def _trusted_worktree_root(repo: Path) -> Path:
+    if repo.is_symlink() or not repo.is_dir():
+        raise Blocked("worktree_root_unsafe", "discard_worktree_and_reconcile")
+    try:
+        return repo.resolve(strict=True)
+    except OSError as exc:
+        raise Blocked("worktree_root_unresolvable", "discard_worktree_and_reconcile") from exc
+
+
+def _checked_existing_file(root: Path, raw: Path) -> Path:
+    if raw.is_symlink():
+        raise Blocked("repair_target_symlink_rejected", "discard_worktree_and_reconcile")
+    try:
+        resolved = raw.resolve(strict=True)
+        resolved.relative_to(root)
+    except (OSError, ValueError) as exc:
+        raise Blocked("repair_target_outside_worktree", "discard_worktree_and_reconcile") from exc
+    if not resolved.is_file():
+        raise Blocked("repair_target_not_regular_file", "discard_worktree_and_reconcile")
+    return resolved
+
+
+def repair_workspace(repo: Path) -> RepairWorkspace:
+    root = _trusted_worktree_root(repo)
+    return RepairWorkspace(
+        root=root,
+        publisher=_checked_existing_file(
+            root,
+            root / "scripts/human_node/publish_pr5_prompt_governance_v1.py",
+        ),
+        validator=_checked_existing_file(
+            root,
+            root / "scripts/validation/validate_pr5_evidence_currentness_prompt_v1.py",
+        ),
+        prompt_test=_checked_existing_file(
+            root,
+            root / "tests/validation/test_pr5_evidence_currentness_prompt_v1.py",
+        ),
+        publisher_test=_checked_existing_file(
+            root,
+            root / "tests/validation/test_publish_pr5_prompt_governance_v1.py",
+        ),
+    )
+
+
+def patch_publisher(ws: RepairWorkspace) -> None:
+    source = ws.publisher.read_text(encoding="utf-8")
     if BUNDLE_MANIFEST_CONSTANT.strip() in source:
         raise Blocked("publisher_already_partially_repaired", "read_only_reconcile_existing_head")
     source = source.replace('"bundle-manifest.json"', "BUNDLE_MANIFEST_NAME")
@@ -766,31 +840,35 @@ def patch_publisher(path: Path) -> None:
     if main_start < 0 or guard < 0:
         raise Blocked("publisher_main_markers_missing", "refresh_exact_head")
     source = source[:main_start] + NEW_MAIN_BLOCK.rstrip() + "\n\n" + source[guard:]
-    path.write_text(source, encoding="utf-8")
+    ws.publisher.write_text(source, encoding="utf-8")
 
 
-def patch_validator(path: Path) -> None:
-    path.write_text(NEW_VALIDATOR, encoding="utf-8")
+def patch_validator(ws: RepairWorkspace) -> None:
+    ws.validator.write_text(NEW_VALIDATOR, encoding="utf-8")
 
 
-def patch_prompt_test(path: Path) -> None:
-    source = path.read_text(encoding="utf-8")
+def patch_prompt_test(ws: RepairWorkspace) -> None:
+    source = ws.prompt_test.read_text(encoding="utf-8")
     if "import os\n" not in source:
         source = source.replace("import json\n", "import json\nimport os\n", 1)
     marker = '\nif __name__ == "__main__":\n'
     if marker not in source:
         raise Blocked("prompt_test_guard_missing", "refresh_exact_head")
     source = source.replace(marker, PROMPT_TEST_ADDITION + marker, 1)
-    path.write_text(source, encoding="utf-8")
+    ws.prompt_test.write_text(source, encoding="utf-8")
 
 
-def patch_publisher_test(path: Path) -> None:
-    source = path.read_text(encoding="utf-8")
+def patch_publisher_test(ws: RepairWorkspace) -> None:
+    source = ws.publisher_test.read_text(encoding="utf-8")
     old = "assert spec and spec.loader\n"
     if old not in source:
         raise Blocked("publisher_test_composite_assertion_missing", "read_only_reconcile_existing_head")
-    source = source.replace(old, "assert spec is not None\nassert spec.loader is not None\n", 1)
-    path.write_text(source, encoding="utf-8")
+    source = source.replace(
+        old,
+        "assert spec is not None\nassert spec.loader is not None\n",
+        1,
+    )
+    ws.publisher_test.write_text(source, encoding="utf-8")
 
 
 def function_decisions(source: str, name: str) -> int:
@@ -924,11 +1002,7 @@ def _acquire_gitleaks_cache_lock(path: Path):
     return fh
 
 
-def _install_verified_cache_file(
-    source: Path,
-    destination: Path,
-    expected_sha256: str,
-) -> None:
+def _validate_cache_parent(destination: Path) -> None:
     try:
         destination.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     except OSError as exc:
@@ -936,26 +1010,41 @@ def _install_verified_cache_file(
             "gitleaks_cache_parent_create_failed",
             "inspect_cache_without_deleting_unknown_state",
         ) from exc
-
     if destination.parent.is_symlink() or not destination.parent.is_dir():
         raise Blocked(
             "gitleaks_cache_parent_unsafe",
             "inspect_cache_without_deleting_unknown_state",
         )
 
-    if destination.exists():
-        if destination.is_symlink() or not destination.is_file():
-            raise Blocked(
-                "gitleaks_cache_destination_unsafe",
-                "inspect_cache_without_deleting_unknown_state",
-            )
-        if sha256(destination) == expected_sha256:
-            return
-        raise Blocked(
-            "cached_gitleaks_asset_sha256_mismatch",
-            "preserve_invalid_cache_and_inspect",
-        )
 
+def _cache_destination_state(destination: Path, expected_sha256: str) -> str:
+    if not destination.exists():
+        return "missing"
+    if destination.is_symlink() or not destination.is_file():
+        return "unsafe"
+    if sha256(destination) == expected_sha256:
+        return "exact"
+    return "invalid"
+
+
+def _require_cache_destination_state(destination: Path, expected_sha256: str) -> bool:
+    state = _cache_destination_state(destination, expected_sha256)
+    if state == "exact":
+        return True
+    if state == "missing":
+        return False
+    if state == "unsafe":
+        raise Blocked(
+            "gitleaks_cache_destination_unsafe",
+            "inspect_cache_without_deleting_unknown_state",
+        )
+    raise Blocked(
+        "cached_gitleaks_asset_sha256_mismatch",
+        "preserve_invalid_cache_and_inspect",
+    )
+
+
+def _create_cache_temp(destination: Path) -> tuple[int, Path]:
     try:
         fd, temporary = tempfile.mkstemp(
             prefix=f".{destination.name}.",
@@ -967,57 +1056,69 @@ def _install_verified_cache_file(
             "gitleaks_cache_temp_create_failed",
             "inspect_cache_without_deleting_unknown_state",
         ) from exc
+    return fd, Path(temporary)
 
-    temp_path = Path(temporary)
+
+def _copy_cache_bytes(source: Path, fd: int) -> None:
     try:
-        try:
-            os.fchmod(fd, 0o600)
-            with os.fdopen(fd, "wb") as out, source.open("rb") as src:
-                shutil.copyfileobj(src, out, length=1024 * 1024)
-                out.flush()
-                os.fsync(out.fileno())
-        except OSError as exc:
-            raise Blocked(
-                "gitleaks_cache_temp_write_failed",
-                "inspect_cache_without_deleting_unknown_state",
-            ) from exc
+        os.fchmod(fd, 0o600)
+        with os.fdopen(fd, "wb") as out, source.open("rb") as src:
+            shutil.copyfileobj(src, out, length=1024 * 1024)
+            out.flush()
+            os.fsync(out.fileno())
+    except OSError as exc:
+        raise Blocked(
+            "gitleaks_cache_temp_write_failed",
+            "inspect_cache_without_deleting_unknown_state",
+        ) from exc
 
-        if sha256(temp_path) != expected_sha256:
-            raise Blocked(
-                "gitleaks_destination_temp_sha256_mismatch",
-                "discard_destination_temp",
-            )
 
-        try:
-            os.replace(temp_path, destination)
-        except OSError as exc:
-            if (
-                destination.exists()
-                and destination.is_file()
-                and not destination.is_symlink()
-                and sha256(destination) == expected_sha256
-            ):
-                return
-            raise Blocked(
-                "gitleaks_cache_install_failed",
-                "inspect_cache_without_deleting_unknown_state",
-            ) from exc
+def _install_cache_temp(
+    temp_path: Path,
+    destination: Path,
+    expected_sha256: str,
+) -> None:
+    if sha256(temp_path) != expected_sha256:
+        raise Blocked(
+            "gitleaks_destination_temp_sha256_mismatch",
+            "discard_destination_temp",
+        )
+    try:
+        os.replace(temp_path, destination)
+    except OSError as exc:
+        if _cache_destination_state(destination, expected_sha256) == "exact":
+            return
+        raise Blocked(
+            "gitleaks_cache_install_failed",
+            "inspect_cache_without_deleting_unknown_state",
+        ) from exc
+    try:
+        os.chmod(destination, 0o600)
+    except OSError as exc:
+        raise Blocked(
+            "gitleaks_cache_chmod_failed",
+            "inspect_cache_without_deleting_unknown_state",
+        ) from exc
+    _fsync_directory(destination.parent)
+    if sha256(destination) != expected_sha256:
+        raise Blocked(
+            "gitleaks_cache_postinstall_sha256_mismatch",
+            "preserve_cache_and_stop",
+        )
 
-        try:
-            os.chmod(destination, 0o600)
-        except OSError as exc:
-            raise Blocked(
-                "gitleaks_cache_chmod_failed",
-                "inspect_cache_without_deleting_unknown_state",
-            ) from exc
 
-        _fsync_directory(destination.parent)
-
-        if sha256(destination) != expected_sha256:
-            raise Blocked(
-                "gitleaks_cache_postinstall_sha256_mismatch",
-                "preserve_cache_and_stop",
-            )
+def _install_verified_cache_file(
+    source: Path,
+    destination: Path,
+    expected_sha256: str,
+) -> None:
+    _validate_cache_parent(destination)
+    if _require_cache_destination_state(destination, expected_sha256):
+        return
+    fd, temp_path = _create_cache_temp(destination)
+    try:
+        _copy_cache_bytes(source, fd)
+        _install_cache_temp(temp_path, destination, expected_sha256)
     finally:
         try:
             temp_path.unlink(missing_ok=True)
@@ -1025,62 +1126,43 @@ def _install_verified_cache_file(
             pass
 
 
-def prepare_gitleaks(
+def _prepare_cached_gitleaks_asset(
     private: Path,
     cache_root: Path,
     steps: Steps,
 ) -> Path:
     asset = cache_root / GL_CACHE_REL
-    try:
-        asset.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-    except OSError as exc:
-        raise Blocked(
-            "gitleaks_cache_parent_create_failed",
-            "inspect_cache_without_deleting_unknown_state",
-        ) from exc
-
+    _validate_cache_parent(asset)
     steps.start("prepare_pinned_gitleaks_asset_cache", 90)
     lock = _acquire_gitleaks_cache_lock(
         asset.parent / f".{asset.name}.lock"
     )
     try:
-        if asset.exists():
-            if asset.is_symlink() or not asset.is_file():
-                raise Blocked(
-                    "gitleaks_cache_destination_unsafe",
-                    "inspect_cache_without_deleting_unknown_state",
-                )
-            if sha256(asset) != GL_ASSET_SHA256:
-                raise Blocked(
-                    "cached_gitleaks_asset_sha256_mismatch",
-                    "preserve_invalid_cache_and_inspect",
-                )
+        if _require_cache_destination_state(asset, GL_ASSET_SHA256):
             steps.ok("gitleaks_asset_cache_HIT_PASS")
-        else:
-            staged = private / "gitleaks.tar.gz"
-            download(GL_ASSET_URL, staged, 90)
-            if sha256(staged) != GL_ASSET_SHA256:
-                raise Blocked(
-                    "gitleaks_asset_sha256_mismatch",
-                    "discard_download",
-                )
-            source_dev = staged.stat().st_dev
-            cache_dev = asset.parent.stat().st_dev
-            _install_verified_cache_file(
-                staged,
-                asset,
-                GL_ASSET_SHA256,
+            return asset
+        staged = private / "gitleaks.tar.gz"
+        download(GL_ASSET_URL, staged, 90)
+        if sha256(staged) != GL_ASSET_SHA256:
+            raise Blocked(
+                "gitleaks_asset_sha256_mismatch",
+                "discard_download",
             )
-            steps.ok(
-                "gitleaks_asset_cache_MISS_install_PASS "
-                f"source_dev={source_dev} "
-                f"cache_dev={cache_dev} "
-                f"cross_fs={str(source_dev != cache_dev).lower()}"
-            )
+        source_dev = staged.stat().st_dev
+        cache_dev = asset.parent.stat().st_dev
+        _install_verified_cache_file(staged, asset, GL_ASSET_SHA256)
+        steps.ok(
+            "gitleaks_asset_cache_MISS_install_PASS "
+            f"source_dev={source_dev} "
+            f"cache_dev={cache_dev} "
+            f"cross_fs={str(source_dev != cache_dev).lower()}"
+        )
+        return asset
     finally:
         lock.close()
 
-    steps.start("gitleaks_identity_and_canaries", 75)
+
+def _validated_gitleaks_binary(asset: Path, private: Path) -> Path:
     binary = extract_gitleaks(
         asset,
         private / "gitleaks-bin",
@@ -1089,21 +1171,21 @@ def prepare_gitleaks(
         [str(binary), "version"],
         timeout=10,
     )
-    if (
-        version.returncode != 0
-        or GL_VERSION not in (
-            version.stdout + version.stderr
-        )
-    ):
+    if version.returncode != 0:
         raise Blocked(
             "gitleaks_version_drift",
             "stop_and_reconcile_scanner",
         )
+    if GL_VERSION not in (version.stdout + version.stderr):
+        raise Blocked(
+            "gitleaks_version_drift",
+            "stop_and_reconcile_scanner",
+        )
+    return binary
 
-    alphabet = (
-        string.ascii_letters
-        + string.digits
-    )
+
+def _positive_canary(binary: Path, private: Path) -> None:
+    alphabet = string.ascii_letters + string.digits
     token = (
         "gh"
         + "p_"
@@ -1112,7 +1194,6 @@ def prepare_gitleaks(
             for _ in range(36)
         )
     )
-
     pos = private / "canary-positive"
     pos.mkdir()
     (pos / "fixture.txt").write_text(
@@ -1126,15 +1207,14 @@ def prepare_gitleaks(
         git_mode=False,
         timeout=30,
     )
-    if (
-        pos_run.returncode != 1
-        or not report(pos_report)
-    ):
+    if pos_run.returncode != 1 or not report(pos_report):
         raise Blocked(
             "gitleaks_positive_canary_failed",
             "do_not_credit_scanner",
         )
 
+
+def _negative_canary(binary: Path, private: Path) -> None:
     neg = private / "canary-negative"
     neg.mkdir()
     (neg / "fixture.txt").write_text(
@@ -1148,18 +1228,31 @@ def prepare_gitleaks(
         git_mode=False,
         timeout=30,
     )
-    if (
-        neg_run.returncode != 0
-        or report(neg_report)
-    ):
+    if neg_run.returncode != 0 or report(neg_report):
         raise Blocked(
             "gitleaks_negative_canary_failed",
             "do_not_credit_scanner",
         )
 
-    steps.ok(
-        "gitleaks_identity_canaries_PASS"
+
+def prepare_gitleaks(
+    private: Path,
+    cache_root: Path,
+    steps: Steps,
+) -> Path:
+    asset = _prepare_cached_gitleaks_asset(
+        private,
+        cache_root,
+        steps,
     )
+    steps.start("gitleaks_identity_and_canaries", 75)
+    binary = _validated_gitleaks_binary(
+        asset,
+        private,
+    )
+    _positive_canary(binary, private)
+    _negative_canary(binary, private)
+    steps.ok("gitleaks_identity_canaries_PASS")
     return binary
 
 
@@ -1310,10 +1403,11 @@ def persist_reusable_artifacts(repo: Path) -> None:
 
 
 def apply_patch(repo: Path) -> dict[str, int]:
-    patch_publisher(repo / PUBLISHER)
-    patch_validator(repo / VALIDATOR)
-    patch_prompt_test(repo / PROMPT_TEST)
-    patch_publisher_test(repo / PUBLISHER_TEST)
+    ws = repair_workspace(repo)
+    patch_publisher(ws)
+    patch_validator(ws)
+    patch_prompt_test(ws)
+    patch_publisher_test(ws)
     persist_reusable_artifacts(repo)
     return static_sonar_regressions(repo)
 
@@ -1422,30 +1516,93 @@ def push_exact(repo: Path, commit: str, steps: Steps) -> None:
     steps.ok(f"remote_branch_exact_readback_PASS sha={commit}")
 
 
+def _sonar_check_run(payload: object, commit: str) -> dict[str, object] | None:
+    if not isinstance(payload, dict):
+        return None
+    runs = payload.get("check_runs")
+    if not isinstance(runs, list):
+        return None
+    for row in runs:
+        if not isinstance(row, dict):
+            continue
+        if row.get("name") != "SonarCloud Code Analysis":
+            continue
+        if row.get("head_sha") != commit:
+            continue
+        return row
+    return None
+
+
+def _safe_sonar_annotations(payload: object) -> list[dict[str, object]]:
+    if not isinstance(payload, list):
+        return []
+    safe: list[dict[str, object]] = []
+    fields = (
+        "path",
+        "start_line",
+        "end_line",
+        "annotation_level",
+        "title",
+    )
+    for row in payload:
+        if isinstance(row, dict):
+            safe.append(
+                {key: row.get(key) for key in fields}
+            )
+    return safe
+
+
+def _record_sonar_failure(
+    run: dict[str, object],
+    steps: Steps,
+) -> NoReturn:
+    output = run.get("output")
+    count = 0
+    if isinstance(output, dict):
+        count = int(output.get("annotations_count") or 0)
+    run_id = run.get("id")
+    annotations = gh_json(
+        f"repos/{REPOSITORY}/check-runs/{run_id}/annotations?per_page=100",
+        20,
+    )
+    safe = _safe_sonar_annotations(annotations)
+    receipt = steps.root / "sonar-annotations.sanitized.json"
+    receipt.write_text(
+        json.dumps(safe, indent=2, sort_keys=True) + "\n"
+    )
+    print("SONAR_ANNOTATIONS_BEGIN")
+    print(json.dumps(safe, indent=2, sort_keys=True))
+    print("SONAR_ANNOTATIONS_END")
+    raise Blocked(
+        f"sonar_failed_annotations_{count}",
+        "review_exact_new_annotations_without_replaying_push",
+    )
+
+
+def _completed_sonar_result(
+    run: dict[str, object] | None,
+    steps: Steps,
+) -> str | None:
+    if run is None or run.get("status") != "completed":
+        return None
+    if str(run.get("conclusion")) == "success":
+        return "PASS"
+    _record_sonar_failure(run, steps)
+
+
 def sonar_readback(commit: str, steps: Steps) -> str:
     deadline = time.monotonic() + 180
     while time.monotonic() < deadline:
-        value = gh_json(f"repos/{REPOSITORY}/commits/{commit}/check-runs", 20)
-        runs = value.get("check_runs", []) if isinstance(value, dict) else []
-        sonar = [r for r in runs if isinstance(r, dict) and r.get("name") == "SonarCloud Code Analysis" and r.get("head_sha") == commit]
-        if sonar:
-            run = sonar[0]
-            if run.get("status") == "completed":
-                conclusion = str(run.get("conclusion"))
-                if conclusion == "success":
-                    return "PASS"
-                count = int((run.get("output") or {}).get("annotations_count") or 0)
-                annotations = gh_json(f"repos/{REPOSITORY}/check-runs/{run['id']}/annotations?per_page=100", 20)
-                safe = []
-                if isinstance(annotations, list):
-                    for row in annotations:
-                        if isinstance(row, dict):
-                            safe.append({k:row.get(k) for k in ("path","start_line","end_line","annotation_level","title")})
-                (steps.root / "sonar-annotations.sanitized.json").write_text(json.dumps(safe, indent=2, sort_keys=True)+"\n")
-                print("SONAR_ANNOTATIONS_BEGIN")
-                print(json.dumps(safe, indent=2, sort_keys=True))
-                print("SONAR_ANNOTATIONS_END")
-                raise Blocked(f"sonar_failed_annotations_{count}", "review_exact_new_annotations_without_replaying_push")
+        payload = gh_json(
+            f"repos/{REPOSITORY}/commits/{commit}/check-runs",
+            20,
+        )
+        result = _completed_sonar_result(
+            _sonar_check_run(payload, commit),
+            steps,
+        )
+        if result is not None:
+            return result
         time.sleep(10)
     return "PENDING"
 

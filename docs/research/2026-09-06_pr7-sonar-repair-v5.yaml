@@ -128,3 +128,46 @@ authority:
   release: false
   deployment: false
   production: false
+sonar_followup_after_commit_45a42a7:
+  verified_head: 45a42a76738020ecfb91aba1a1cafc9c1d70ffc3
+  sonar_check_run: 101395442062
+  quality_gate: FAILURE
+  security_rating_new_code: E
+  annotations_count: 5
+  old_six_findings_status: closed
+  new_findings_scope: scripts/human_node/repair_pr7_sonar_gate_v5.py
+  findings:
+    - line_784_path_construction_from_parameter
+    - line_793_path_construction_from_parameter
+    - line_927_cache_install_complexity_19
+    - line_1028_prepare_gitleaks_complexity_16
+    - line_1425_sonar_readback_complexity_30
+  selected_repair:
+    - fixed_literal_worktree_paths_with_resolve_and_containment
+    - split_cache_install_helpers
+    - split_gitleaks_asset_binary_canary_phases
+    - split_sonar_match_sanitize_failure_poll_phases
+    - focused_hostile_tests_for_path_confinement_cache_and_sonar_sanitization
+    - Git_backed_followup_launcher_v6
+  new_dependencies: none
+  Gitleaks_before_commit: mandatory
+  full_history_Gitleaks_before_push: mandatory
+  automatic_retries: 0
+  authority: Draft_only
+  postpush_Sonar_at_commit_time: pending
+
+launcher_self_source_recovery_v6_1:
+  observed_blocker: NameError_CANONICAL_SOURCE_before_materialization
+  remote_mutation_from_failed_attempt: false
+  root_cause: compact_followup_called_undefined_self_source_symbol
+  corrected_contract:
+    - canonical_source_reads_exact_current_launcher_via___file__
+    - symlink_or_non_regular_launcher_fails_closed
+    - exact_self_source_is_persisted_to_Git_followup_path
+    - research_replay_marker_matches_actual_payload_key
+  sandbox_evidence:
+    self_source_exact_bytes: PASS
+    symlink_fail_closed: PASS
+    exact_four_path_materialization: PASS
+    focused_hostile_tests: 10/10_PASS
+    max_heuristic_decision_count: 10
