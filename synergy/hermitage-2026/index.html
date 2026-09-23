@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#102c29">
+<meta name="description" content="Эрмитаж 2026: поэтажный anti-lost навигатор по Главному музейному комплексу и Главному штабу.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+<title>Эрмитаж 2026 — поэтажный anti-lost план</title>
+<link rel="stylesheet" href="styles.css">
+<script defer src="app.js"></script>
+</head>
+<body>
+<a class="skip" href="#floors">К этажам</a>
+<header class="hero">
+  <nav class="topbar" aria-label="Основная навигация">
+    <strong>Эрмитаж 2026</strong>
+    <div class="top-actions"><a href="https://www.hermitagemuseum.org/tickets?lng=en" target="_blank" rel="noopener noreferrer">Билет / слот ↗</a> <a href="https://www.hermitagemuseum.org/visitus?lng=en" target="_blank" rel="noopener noreferrer">Часы работы ↗</a></div>
+  </nav>
+  <div class="hero-copy">
+    <p class="eyebrow">FLOOR-BY-FLOOR · MOBILE-FIRST · 2026</p>
+    <h1>План, чтобы не теряться внутри Эрмитажа</h1>
+    <p>Каждый этаж и блок сворачивается отдельно. Идите от крупного landmark к крупному landmark; для последнего отрезка используйте 2GIS или официальный PDF-план.</p>
+    <div class="hero-actions">
+      <a class="button primary" href="#floors">Выбрать этаж</a>
+      <button class="button" id="openAll" type="button">Развернуть всё</button>
+      <button class="button" id="closeAll" type="button">Свернуть всё</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<section class="notice" aria-labelledby="truth-title">
+  <div><span class="badge">Важно</span><h2 id="truth-title">Точная геометрия — только из официальных планов</h2></div>
+  <p>Этот сайт — anti-lost слой, а не замена официальной карте. Эрмитаж подтверждает, что 2GIS содержит поэтажные планы Главного комплекса и Главного штаба и умеет вести до конкретного места с учётом лестниц/поворотов. Номера помещений здесь показываются только когда есть подтверждённый источник или понятная room-number логика.</p>
+</section>
+
+<section class="quick-grid" aria-label="Быстрый выбор корпуса">
+  <a class="quick-card" href="#mmc-f1"><b>Главный комплекс</b><span>Этажи 1 · 2 · 3</span><small>Зимний дворец + Малый + Большой/Старый + Новый Эрмитаж</small></a>
+  <a class="quick-card" href="#gs-f1"><b>Главный штаб</b><span>Этажи 1 · 2 · 3 · 4</span><small>Public Forum + исторические интерьеры + XIX–XX вв.</small></a>
+</section>
+
+<section class="lost-mode" aria-labelledby="lost-title">
+  <div>
+    <p class="eyebrow">ANTI-LOST MODE</p>
+    <h2 id="lost-title">Я потерялся — что делать?</h2>
+  </div>
+  <ol>
+    <li><b>Не идите дальше наугад.</b> Найдите ближайший номер зала, крупную лестницу, атриум или название корпуса.</li>
+    <li><b>Определите этаж.</b> В Главном штабе номер 3xx/4xx — сильный ориентир этажа; в Главном комплексе сверяйте официальный floor plan.</li>
+    <li><b>Сбросьте маршрут к landmark.</b> Главный комплекс: Иорданская лестница / крупный парадный зал. Главный штаб: Public Forum / атриум.</li>
+    <li><b>Откройте 2GIS.</b> Постройте indoor route до следующего конкретного зала.</li>
+  </ol>
+</section>
+
+<section id="floors" class="floors" aria-labelledby="floors-title">
+  <div class="section-head">
+    <div><p class="eyebrow">7 MODULES</p><h2 id="floors-title">Этажи и блоки</h2></div>
+    <label class="search-label">Фильтр по этажам/блокам
+      <input id="floorSearch" type="search" placeholder="Напр. Рембрандт, 239, Иран, Public Forum">
+    </label>
+  </div>
+  <nav class="floor-tabs" aria-label="Поэтажные вкладки">
+    <a href="#mmc-f1">Главный комплекс · 1</a>
+    <a href="#mmc-f2">Главный комплекс · 2</a>
+    <a href="#mmc-f3">Главный комплекс · 3</a>
+    <a href="#gs-f1">Главный штаб · 1</a>
+    <a href="#gs-f2">Главный штаб · 2</a>
+    <a href="#gs-f3">Главный штаб · 3</a>
+    <a href="#gs-f4">Главный штаб · 4</a>
+  </nav>
+
+    <details class="floor" id="mmc-f1">
+      <summary><span><b>Главный комплекс · этаж 1</b><small>3 блока</small></span><span class="chev">⌄</span></summary>
+      <div class="floor-body">
+        <div class="breadcrumb"><span>Вход</span><i>›</i><span>Главный музейный комплекс</span><i>›</i><strong>этаж 1</strong></div>
+        <div class="reset"><b>Старт:</b> Дворцовая площадь → входная зона → Главный вестибюль → Иорданская галерея.<br><b>Если потерялись:</b> Если потерялись: найдите указатель к Иорданской галерее / Главному вестибюлю, затем снова выберите блок. Не пытайтесь пересекать корпус по памяти.</div>
+        <div class="exit-guide"><b>Выход / reset:</b> Для обычного выхода: следуйте текущим указателям «Выход» к Главному вестибюлю. Если поток посетителей или проход изменён, ориентируйтесь на указатели и персонал музея.<br><small>Не является схемой эвакуации: в экстренной ситуации следуйте указателям, объявлениям и инструкциям персонала.</small></div>
+        <div class="floor-actions"><a href="https://www.hermitagemuseum.org/panorama/pano_1?floorNum=1&amp;lng=en" target="_blank" rel="noopener noreferrer">Официальный виртуальный этаж ↗</a> <a href="https://www.hermitagemuseum.org/uploads/files/hermtiage_floor_plans_2025.pdf" target="_blank" rel="noopener noreferrer">PDF-план ↗</a> <a href="https://2gis.ru/spb/search/%D0%93%D0%BE%D1%81%D1%83%D0%B4%D0%B0%D1%80%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B9%20%D0%AD%D1%80%D0%BC%D0%B8%D1%82%D0%B0%D0%B6" target="_blank" rel="noopener noreferrer">2GIS: построить путь ↗</a></div>
+        <div class="blocks">
+        <article class="block" id="mmc-f1-entry">
+          <div class="block-top"><h3>A · Вход и ориентация</h3><span class="confidence">official-room-index</span></div>
+          <ul><li>Зал/зона 3 — Entrance Zone</li><li>Зал/зона 2 — Main Vestibule</li><li>Зал/зона 1 — Jordan Gallery</li></ul>
+          <p><strong>Как идти:</strong> Используйте этот блок как нулевую точку перед подъёмом на парадный этаж.</p>
+          <p class="next"><strong>Дальше:</strong> К парадным залам: поднимайтесь по Иорданской лестнице на этаж 2.</p>
+        </article>
+        <article class="block" id="mmc-f1-prehistory">
+          <div class="block-top"><h3>B · Доисторические культуры</h3><span class="confidence">official-room-index</span></div>
+          <ul><li>11 — Palaeolithic Age</li><li>12 — Neolithic and Early Bronze Ages</li><li>Bronze Age rooms</li></ul>
+          <p><strong>Как идти:</strong> Держитесь последовательной нумерации залов; это спокойный линейный маршрут.</p>
+          <p class="next"><strong>Дальше:</strong> После археологии выбирайте Ancient Egypt / Antiquity по указателям.</p>
+        </article>
+        <article class="block" id="mmc-f1-antiquity">
+          <div class="block-top"><h3>C · Египет, Греция, Рим</h3><span class="confidence">collection-level + official floor</span></div>
+          <ul><li>Ancient Egypt</li><li>Ancient Greece</li><li>Ancient Rome</li><li>New Hermitage antiquities</li></ul>
+          <p><strong>Как идти:</strong> Следуйте указателям коллекций и сверяйте конкретный зал на 2GIS/официальном PDF.</p>
+          <p class="next"><strong>Дальше:</strong> Для старых мастеров и дворцовых интерьеров переходите на этаж 2.</p>
+        </article></div>
+      </div>
+    </details>
+    <details class="floor" id="mmc-f2">
+      <summary><span><b>Главный комплекс · этаж 2</b><small>4 блока</small></span><span class="chev">⌄</span></summary>
+      <div class="floor-body">
+        <div class="breadcrumb"><span>Вход</span><i>›</i><span>Главный музейный комплекс</span><i>›</i><strong>этаж 2</strong></div>
+        <div class="reset"><b>Старт:</b> Иорданская лестница → парадная анфилада Зимнего дворца.<br><b>Если потерялись:</b> Если потерялись: вернитесь к крупному landmark — Иорданская лестница, Георгиевский зал или Павильонный зал — и откройте 2GIS до следующего зала.</div>
+        <div class="exit-guide"><b>Выход / reset:</b> Для обычного выхода: следуйте текущим указателям «Выход» к спуску и далее к Главному вестибюлю. Не выбирайте незнакомый переход только по памяти.<br><small>Не является схемой эвакуации: в экстренной ситуации следуйте указателям, объявлениям и инструкциям персонала.</small></div>
+        <div class="floor-actions"><a href="https://www.hermitagemuseum.org/panorama/pano_1?floorNum=2&amp;lng=en" target="_blank" rel="noopener noreferrer">Официальный виртуальный этаж ↗</a> <a href="https://www.hermitagemuseum.org/uploads/files/hermtiage_floor_plans_2025.pdf" target="_blank" rel="noopener noreferrer">PDF-план ↗</a> <a href="https://2gis.ru/spb/search/%D0%93%D0%BE%D1%81%D1%83%D0%B4%D0%B0%D1%80%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B9%20%D0%AD%D1%80%D0%BC%D0%B8%D1%82%D0%B0%D0%B6" target="_blank" rel="noopener noreferrer">2GIS: построить путь ↗</a></div>
+        <div class="blocks">
+        <article class="block" id="mmc-f2-state">
+          <div class="block-top"><h3>A · Зимний дворец · парадные залы</h3><span class="confidence">official permanent-exhibition sequence</span></div>
+          <ul><li>Field Marshals’ Hall</li><li>Peter the Great Memorial Hall</li><li>Armorial Hall</li><li>War Gallery of 1812</li><li>St George Hall</li></ul>
+          <p><strong>Как идти:</strong> Идите по парадной анфиладе; не уходите в боковые жилые комнаты, если цель — быстрый маршрут.</p>
+          <p class="next"><strong>Дальше:</strong> Далее — Small Hermitage / Pavilion Hall.</p>
+        </article>
+        <article class="block" id="mmc-f2-small">
+          <div class="block-top"><h3>B · Малый Эрмитаж</h3><span class="confidence">official building/collection</span></div>
+          <ul><li>Pavilion Hall</li><li>Peacock Clock</li></ul>
+          <p><strong>Как идти:</strong> Павильонный зал — лучший landmark для перехода от дворцовых интерьеров к музейным галереям.</p>
+          <p class="next"><strong>Дальше:</strong> Продолжайте в Great (Old) Hermitage к итальянской живописи.</p>
+        </article>
+        <article class="block" id="mmc-f2-old">
+          <div class="block-top"><h3>C · Большой (Старый) Эрмитаж · Италия</h3><span class="confidence">official building/room pages</span></div>
+          <ul><li>Leonardo da Vinci</li><li>Raphael</li><li>Titian / Venetian Renaissance</li><li>Caravaggio</li><li>228 — Raphael Loggias</li></ul>
+          <p><strong>Как идти:</strong> Держитесь итальянской последовательности; зал 228 — подтверждённый номер Лоджий Рафаэля.</p>
+          <p class="next"><strong>Дальше:</strong> После 228 переходите к New Hermitage / Spain / Netherlands.</p>
+        </article>
+        <article class="block" id="mmc-f2-new">
+          <div class="block-top"><h3>D · Новый Эрмитаж · Испания, Фландрия, Голландия</h3><span class="confidence">official virtual-floor index</span></div>
+          <ul><li>239 — Spanish painting XVII c.</li><li>240 — Spanish painting XV–XVI c.</li><li>241 — Gallery of the History of Ancient Painting</li><li>Dutch / Flemish galleries</li><li>Rembrandt cluster — сверять актуальный план</li><li>Knights’ Hall</li></ul>
+          <p><strong>Как идти:</strong> Используйте номера 239 → 240 → 241 как надёжную числовую цепочку; дальше следуйте тематическим указателям.</p>
+          <p class="next"><strong>Дальше:</strong> Если нужен Восток/Иран — переходите на этаж 3.</p>
+        </article></div>
+      </div>
+    </details>
+    <details class="floor" id="mmc-f3">
+      <summary><span><b>Главный комплекс · этаж 3</b><small>3 блока</small></span><span class="chev">⌄</span></summary>
+      <div class="floor-body">
+        <div class="breadcrumb"><span>Вход</span><i>›</i><span>Главный музейный комплекс</span><i>›</i><strong>этаж 3</strong></div>
+        <div class="reset"><b>Старт:</b> Поднимайтесь на 3 этаж только после выбора конкретной коллекции: он длиннее и менее интуитивен.<br><b>Если потерялись:</b> Если потерялись: не идите «по кругу». Найдите ближайший номер зала, откройте официальный floor 3 или 2GIS и постройте маршрут до конкретной коллекции.</div>
+        <div class="exit-guide"><b>Выход / reset:</b> Для обычного выхода: следуйте текущим указателям «Выход» к разрешённому спуску и далее к Главному вестибюлю; при сомнении спросите сотрудника музея.<br><small>Не является схемой эвакуации: в экстренной ситуации следуйте указателям, объявлениям и инструкциям персонала.</small></div>
+        <div class="floor-actions"><a href="https://www.hermitagemuseum.org/panorama/pano_1?floorNum=3&amp;lng=en" target="_blank" rel="noopener noreferrer">Официальный виртуальный этаж ↗</a> <a href="https://www.hermitagemuseum.org/uploads/files/hermtiage_floor_plans_2025.pdf" target="_blank" rel="noopener noreferrer">PDF-план ↗</a> <a href="https://2gis.ru/spb/search/%D0%93%D0%BE%D1%81%D1%83%D0%B4%D0%B0%D1%80%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B9%20%D0%AD%D1%80%D0%BC%D0%B8%D1%82%D0%B0%D0%B6" target="_blank" rel="noopener noreferrer">2GIS: построить путь ↗</a></div>
+        <div class="blocks">
+        <article class="block" id="mmc-f3-iran">
+          <div class="block-top"><h3>A · Иран и Ближний Восток</h3><span class="confidence">official museum blog + floor</span></div>
+          <ul><li>391 — Sasanian Art</li><li>Islamic art</li><li>Persian decorative arts</li></ul>
+          <p><strong>Как идти:</strong> Зал 391 — подтверждённый числовой anchor для новой экспозиции искусства Ирана.</p>
+          <p class="next"><strong>Дальше:</strong> Далее выбирайте Central Asia / Caucasus по указателям.</p>
+        </article>
+        <article class="block" id="mmc-f3-asia">
+          <div class="block-top"><h3>B · Центральная, Восточная и Южная Азия</h3><span class="confidence">collection-level + official floor</span></div>
+          <ul><li>Central Asia</li><li>China</li><li>Tibet / Mongolia</li><li>India</li><li>Japan / applied arts</li></ul>
+          <p><strong>Как идти:</strong> Коллекции крупные и разнесены; сначала задайте одну цель, затем стройте 2GIS-маршрут.</p>
+          <p class="next"><strong>Дальше:</strong> Возврат к лестнице/лифту — перед сменой корпуса.</p>
+        </article>
+        <article class="block" id="mmc-f3-special">
+          <div class="block-top"><h3>C · Специализированные коллекции</h3><span class="confidence">collection-level</span></div>
+          <ul><li>Numismatics</li><li>Glyptics</li><li>Textiles / decorative arts</li><li>Temporary rotations</li></ul>
+          <p><strong>Как идти:</strong> Проверяйте доступность конкретной экспозиции в день посещения.</p>
+          <p class="next"><strong>Дальше:</strong> Для импрессионизма и модернизма — выйти на Дворцовую площадь и перейти в Главный штаб.</p>
+        </article></div>
+      </div>
+    </details>
+    <details class="floor" id="gs-f1">
+      <summary><span><b>Главный штаб · этаж 1</b><small>2 блока</small></span><span class="chev">⌄</span></summary>
+      <div class="floor-body">
+        <div class="breadcrumb"><span>Вход</span><i>›</i><span>Главный штаб</span><i>›</i><strong>этаж 1</strong></div>
+        <div class="reset"><b>Старт:</b> Дворцовая площадь → вход восточного крыла → Public Forum / атриумы.<br><b>Если потерялись:</b> Если потерялись: спуститесь/вернитесь к Public Forum или ближайшему атриуму — это лучший reset-point Главного штаба.</div>
+        <div class="exit-guide"><b>Выход / reset:</b> Для обычного выхода: следуйте текущим указателям «Выход» через Public Forum / входную зону. При изменённой схеме потока используйте только актуальные указатели.<br><small>Не является схемой эвакуации: в экстренной ситуации следуйте указателям, объявлениям и инструкциям персонала.</small></div>
+        <div class="floor-actions"><a href="https://www.hermitagemuseum.org/panorama/pano_2?floorNum=1&amp;lng=en" target="_blank" rel="noopener noreferrer">Официальный виртуальный этаж ↗</a> <a href="https://www.hermitagemuseum.org/uploads/files/floor_plans_gs.pdf" target="_blank" rel="noopener noreferrer">PDF-план ↗</a> <a href="https://2gis.ru/spb/search/%D0%93%D0%BB%D0%B0%D0%B2%D0%BD%D1%8B%D0%B9%20%D1%88%D1%82%D0%B0%D0%B1%20%D0%AD%D1%80%D0%BC%D0%B8%D1%82%D0%B0%D0%B6" target="_blank" rel="noopener noreferrer">2GIS: построить путь ↗</a></div>
+        <div class="blocks">
+        <article class="block" id="gs-f1-entry">
+          <div class="block-top"><h3>A · Вход и Public Forum</h3><span class="confidence">official building/navigation</span></div>
+          <ul><li>Entrance from Palace Square</li><li>Public Forum</li><li>Courtyard / atrium sequence</li></ul>
+          <p><strong>Как идти:</strong> Зафиксируйте номер/название ближайшего атриума перед подъёмом.</p>
+          <p class="next"><strong>Дальше:</strong> Выберите этаж назначения до эскалатора/лестницы.</p>
+        </article>
+        <article class="block" id="gs-f1-route">
+          <div class="block-top"><h3>B · Вертикальная навигация</h3><span class="confidence">official 2GIS indoor-routing statement</span></div>
+          <ul><li>Stairs</li><li>Lifts</li><li>Atriums</li></ul>
+          <p><strong>Как идти:</strong> Для конкретного зала стройте маршрут в 2GIS: официальный музей подтверждает поддержку этажей, лестниц и поворотов.</p>
+          <p class="next"><strong>Дальше:</strong> Этаж 3 — исторические интерьеры и значительная часть живописи; этаж 4 — верхние галереи/ротации.</p>
+        </article></div>
+      </div>
+    </details>
+    <details class="floor" id="gs-f2">
+      <summary><span><b>Главный штаб · этаж 2</b><small>1 блока</small></span><span class="chev">⌄</span></summary>
+      <div class="floor-body">
+        <div class="breadcrumb"><span>Вход</span><i>›</i><span>Главный штаб</span><i>›</i><strong>этаж 2</strong></div>
+        <div class="reset"><b>Старт:</b> От Public Forum поднимитесь на 2 этаж и сразу сверяйте блок по указателям.<br><b>Если потерялись:</b> Если потерялись: вернитесь к вертикальному ядру/атриуму, а не пересекайте длинную анфиладу наугад.</div>
+        <div class="exit-guide"><b>Выход / reset:</b> Для обычного выхода: следуйте текущим указателям вниз к Public Forum / входной зоне; если проход закрыт, не обходите его наугад — используйте указатели или помощь персонала.<br><small>Не является схемой эвакуации: в экстренной ситуации следуйте указателям, объявлениям и инструкциям персонала.</small></div>
+        <div class="floor-actions"><a href="https://www.hermitagemuseum.org/panorama/pano_2?floorNum=2&amp;lng=en" target="_blank" rel="noopener noreferrer">Официальный виртуальный этаж ↗</a> <a href="https://www.hermitagemuseum.org/uploads/files/floor_plans_gs.pdf" target="_blank" rel="noopener noreferrer">PDF-план ↗</a> <a href="https://2gis.ru/spb/search/%D0%93%D0%BB%D0%B0%D0%B2%D0%BD%D1%8B%D0%B9%20%D1%88%D1%82%D0%B0%D0%B1%20%D0%AD%D1%80%D0%BC%D0%B8%D1%82%D0%B0%D0%B6" target="_blank" rel="noopener noreferrer">2GIS: построить путь ↗</a></div>
+        <div class="blocks">
+        <article class="block" id="gs-f2-historic">
+          <div class="block-top"><h3>A · Исторические и декоративные коллекции</h3><span class="confidence">official building-level</span></div>
+          <ul><li>Russian / European decorative art</li><li>Historic ministry context</li><li>Temporary displays</li></ul>
+          <p><strong>Как идти:</strong> Размещение ротаций меняется; ориентируйтесь по текущему floor plan.</p>
+          <p class="next"><strong>Дальше:</strong> Для основной французской живописи поднимайтесь на 3 этаж.</p>
+        </article></div>
+      </div>
+    </details>
+    <details class="floor" id="gs-f3">
+      <summary><span><b>Главный штаб · этаж 3</b><small>3 блока</small></span><span class="chev">⌄</span></summary>
+      <div class="floor-body">
+        <div class="breadcrumb"><span>Вход</span><i>›</i><span>Главный штаб</span><i>›</i><strong>этаж 3</strong></div>
+        <div class="reset"><b>Старт:</b> Этаж 3 — ключевой для длинного маршрута по искусству XIX–начала XX века и историческим интерьерам.<br><b>Если потерялись:</b> Если потерялись: ищите номер зала 3xx. Номер сам показывает этаж; затем используйте 2GIS до нужного 3xx.</div>
+        <div class="exit-guide"><b>Выход / reset:</b> Для обычного выхода: следуйте текущим указателям вниз к Public Forum / входной зоне; длинные анфилады не используйте как «короткий путь» без подтверждения указателями.<br><small>Не является схемой эвакуации: в экстренной ситуации следуйте указателям, объявлениям и инструкциям персонала.</small></div>
+        <div class="floor-actions"><a href="https://www.hermitagemuseum.org/panorama/pano_2?floorNum=3&amp;lng=en" target="_blank" rel="noopener noreferrer">Официальный виртуальный этаж ↗</a> <a href="https://www.hermitagemuseum.org/uploads/files/floor_plans_gs.pdf" target="_blank" rel="noopener noreferrer">PDF-план ↗</a> <a href="https://2gis.ru/spb/search/%D0%93%D0%BB%D0%B0%D0%B2%D0%BD%D1%8B%D0%B9%20%D1%88%D1%82%D0%B0%D0%B1%20%D0%AD%D1%80%D0%BC%D0%B8%D1%82%D0%B0%D0%B6" target="_blank" rel="noopener noreferrer">2GIS: построить путь ↗</a></div>
+        <div class="blocks">
+        <article class="block" id="gs-f3-interiors">
+          <div class="block-top"><h3>A · Бывшее Министерство иностранных дел</h3><span class="confidence">official virtual-floor index</span></div>
+          <ul><li>324 — Waiters’ Room</li><li>325 — Dancing Hall</li><li>329 — Dining Room</li><li>330 — Waterloo Hall</li><li>332 — Pink Hall</li></ul>
+          <p><strong>Как идти:</strong> Используйте 324 → 325 → 329 → 330 → 332 как подтверждённую цепочку landmarks.</p>
+          <p class="next"><strong>Дальше:</strong> После исторических интерьеров переходите в художественные анфилады.</p>
+        </article>
+        <article class="block" id="gs-f3-faberge">
+          <div class="block-top"><h3>B · Декоративное искусство / Fabergé</h3><span class="confidence">official current/exhibition reference</span></div>
+          <ul><li>300 — Carl Fabergé Memorial Rooms</li></ul>
+          <p><strong>Как идти:</strong> Зал 300 — удобный числовой anchor внутри этажа.</p>
+          <p class="next"><strong>Дальше:</strong> Далее — French art / Shchukin &amp; Morozov gallery.</p>
+        </article>
+        <article class="block" id="gs-f3-french">
+          <div class="block-top"><h3>C · Французское искусство XIX–начала XX века</h3><span class="confidence">official museum blog</span></div>
+          <ul><li>Claude Monet Room</li><li>Edgar Degas Room</li><li>Auguste Renoir rooms</li><li>Paul Cézanne</li><li>Gauguin</li><li>Matisse / Picasso sequence</li></ul>
+          <p><strong>Как идти:</strong> Официальный музейный материал описывает новую экспозицию как последовательную галерею; следуйте именам художников по ходу анфилады.</p>
+          <p class="next"><strong>Дальше:</strong> Для room-specific 4xx произведений используйте этаж 4 / текущий план.</p>
+        </article></div>
+      </div>
+    </details>
+    <details class="floor" id="gs-f4">
+      <summary><span><b>Главный штаб · этаж 4</b><small>1 блока</small></span><span class="chev">⌄</span></summary>
+      <div class="floor-body">
+        <div class="breadcrumb"><span>Вход</span><i>›</i><span>Главный штаб</span><i>›</i><strong>этаж 4</strong></div>
+        <div class="reset"><b>Старт:</b> Этаж 4 — верхние 4xx-залы; экспозиции и ротации требуют проверки по текущему плану.<br><b>Если потерялись:</b> Если потерялись: найдите номер 4xx и стройте маршрут от него; не полагайтесь на старые путеводители, если размещение изменилось.</div>
+        <div class="exit-guide"><b>Выход / reset:</b> Для обычного выхода: следуйте текущим указателям вниз к Public Forum / входной зоне; при изменениях экспозиции или проходов ориентируйтесь на персонал и текущие таблички.<br><small>Не является схемой эвакуации: в экстренной ситуации следуйте указателям, объявлениям и инструкциям персонала.</small></div>
+        <div class="floor-actions"><a href="https://www.hermitagemuseum.org/panorama/pano_2?floorNum=4&amp;lng=en" target="_blank" rel="noopener noreferrer">Официальный виртуальный этаж ↗</a> <a href="https://www.hermitagemuseum.org/uploads/files/floor_plans_gs.pdf" target="_blank" rel="noopener noreferrer">PDF-план ↗</a> <a href="https://2gis.ru/spb/search/%D0%93%D0%BB%D0%B0%D0%B2%D0%BD%D1%8B%D0%B9%20%D1%88%D1%82%D0%B0%D0%B1%20%D0%AD%D1%80%D0%BC%D0%B8%D1%82%D0%B0%D0%B6" target="_blank" rel="noopener noreferrer">2GIS: построить путь ↗</a></div>
+        <div class="blocks">
+        <article class="block" id="gs-f4-4xx">
+          <div class="block-top"><h3>A · Галереи 4xx</h3><span class="confidence">official digital-collection/current-news anchors</span></div>
+          <ul><li>431 — подтверждённый room anchor в официальной digital collection</li><li>442 — использовался для временной экспозиции</li><li>Cabinet of the Artist’s Book — Floor 4 (официальная новость)</li></ul>
+          <p><strong>Как идти:</strong> Номер 4xx подтверждает этаж; конкретную текущую экспозицию проверяйте по 2GIS/официальному room directory.</p>
+          <p class="next"><strong>Дальше:</strong> После завершения маршрута возвращайтесь к вертикальному ядру/Public Forum.</p>
+        </article></div>
+      </div>
+    </details>
+  <p id="floorStatus" class="status" aria-live="polite"></p>
+</section>
+
+<section class="directory" aria-labelledby="dir-title">
+  <div class="section-head">
+    <div><p class="eyebrow">100 PLACES</p><h2 id="dir-title">50 популярных + 50 более спокойных</h2></div>
+    <div class="filters">
+      <label>Группа<select id="groupFilter"><option value="">Все</option><option value="popular">Популярные 50</option><option value="quiet">Спокойные 50</option></select></label>
+      <label>Этаж<select id="placeFloor"><option value="">Все</option></select></label>
+      <label>Людность<select id="crowdFilter"><option value="">1–10</option><option value="high">8–10</option><option value="low">1–3</option></select></label>
+    </div>
+  </div>
+  <label class="search-label">Поиск по 100 местам
+    <input id="placeSearch" type="search" placeholder="Monet, Egypt, Fabergé, 228…">
+  </label>
+  <div id="placeCards" class="place-cards" aria-live="polite"></div>
+</section>
+
+<section class="sources">
+  <details>
+    <summary><b>Источники, ограничения и проверка актуальности</b><span>⌄</span></summary>
+    <div>
+      <p>Основные источники: официальный State Hermitage room/floor index, официальный virtual visit, текущая страница Visit Us, официальный материал о 2GIS indoor floor plans. Файлы PDF имеют имя 2025, но ссылки выдаются официальным сайтом в текущем 2026 контексте; перед поездкой проверяйте их повторно.</p>
+      <ul>
+        <li><a href="https://www.hermitagemuseum.org/explore/buildings/rooms?lng=en" target="_blank" rel="noopener noreferrer">Официальный каталог залов ↗</a></li>
+        <li><a href="https://hermitagemuseum.org/news/news_134_24?lng=en" target="_blank" rel="noopener noreferrer">Официальное сообщение об indoor-навигации 2GIS ↗</a></li>
+        <li><a href="https://www.hermitagemuseum.org/uploads/files/hermtiage_floor_plans_2025.pdf" target="_blank" rel="noopener noreferrer">PDF Главного комплекса ↗</a></li>
+        <li><a href="https://www.hermitagemuseum.org/uploads/files/floor_plans_gs.pdf" target="_blank" rel="noopener noreferrer">PDF Главного штаба ↗</a></li>
+      </ul>
+      <p><b>Людность 1–10:</b> экспертный навигационный индекс, не официальный live counter. Полной сопоставимой room-level статистики посещаемости в найденных официальных источниках нет.</p>
+    </div>
+  </details>
+</section>
+</main>
+
+<footer>Synergy Mesh · Hermitage wayfinding · read-only public visitor aid · 2026-09-23</footer>
+</body>
+</html>

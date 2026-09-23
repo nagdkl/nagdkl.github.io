@@ -1,0 +1,489 @@
+schema: synergy.nano-plan/v1
+plan_id: HERMITAGE-PAGES-WAYFINDING-20260923-A
+product: hermitage-wayfinding
+repository: nagdkl/nagdkl.github.io
+namespace: synergy/hermitage-2026/
+roles_registry_count: 289
+selected_roles:
+- world-class wayfinding information architect
+- web accessibility / AQA skeptical reviewer
+donors:
+- type: synergy
+  source: nagdkl/nagdkl.github.io/synergy/289-roles
+  reuse:
+  - CSP
+  - read-only Pages isolation
+  - mobile static UI patterns
+- type: official
+  source: State Hermitage virtual floors and room directory
+  reuse:
+  - floor count
+  - verified room anchors
+  - building names
+- type: official
+  source: State Hermitage 2GIS indoor-routing announcement
+  reuse:
+  - final-segment routing authority
+- type: oss-docs
+  source: MDN
+  reuse:
+  - native details/summary
+  - search semantics
+  - prefers-reduced-motion
+execution:
+  automatic_retries: 0
+  direct_main_write: false
+  force_push: false
+  branch: agent/hermitage-pages-wayfinding-20260923
+  expected_base: bea48392d4df0608a0f988b33bba31eaf1c46388
+  coordination_issue: 9
+  calendar_event_id: mliv1i8gj4giailu8onq48mtf0
+steps:
+- id: H01
+  section: source-grounding
+  goal: Freeze official 2026 source set and uncertainty labels.
+  roles:
+  - wayfinding information architect
+  - web accessibility / AQA skeptical reviewer
+  aqa:
+  - deterministic assertions
+  - hostile malformed/missing-data case
+  - mobile/keyboard accessibility check
+  opensource_synergy_donors:
+  - synergy/289-roles
+  - MDN semantic HTML
+  glue: minimal local HTML/CSS/JS or metadata only
+  coverage:
+    artifact_scope: 100 places + 7 floor modules
+    status: required before successor
+  docs:
+  - docs/wayfinding.md
+  - plan.v1.yaml
+  evidence:
+  - evidence.v1.yaml
+  - SHA256SUMS.json
+  - exact Git readback when materialized
+  gates:
+  - currentness
+  - collision-free exact write-set
+  - no unverified room-number promotion
+  - Gitleaks before commit for H08+
+  successors:
+  - H02
+  professional_prompt: 'Act as a world-class museum wayfinding information architect
+    and skeptical accessibility AQA reviewer. Execute H01 only: Freeze official 2026
+    source set and uncertainty labels. Preserve source provenance, uncertainty labels,
+    exact scope, progressive enhancement, and fail closed on unverified room/floor
+    claims.'
+- id: H02
+  section: information-architecture
+  goal: Define seven floors and visitor-facing blocks.
+  roles:
+  - wayfinding information architect
+  - web accessibility / AQA skeptical reviewer
+  aqa:
+  - deterministic assertions
+  - hostile malformed/missing-data case
+  - mobile/keyboard accessibility check
+  opensource_synergy_donors:
+  - synergy/289-roles
+  - MDN semantic HTML
+  glue: minimal local HTML/CSS/JS or metadata only
+  coverage:
+    artifact_scope: 100 places + 7 floor modules
+    status: required before successor
+  docs:
+  - docs/wayfinding.md
+  - plan.v1.yaml
+  evidence:
+  - evidence.v1.yaml
+  - SHA256SUMS.json
+  - exact Git readback when materialized
+  gates:
+  - currentness
+  - collision-free exact write-set
+  - no unverified room-number promotion
+  - Gitleaks before commit for H08+
+  successors:
+  - H03
+  professional_prompt: 'Act as a world-class museum wayfinding information architect
+    and skeptical accessibility AQA reviewer. Execute H02 only: Define seven floors
+    and visitor-facing blocks. Preserve source provenance, uncertainty labels, exact
+    scope, progressive enhancement, and fail closed on unverified room/floor claims.'
+- id: H03
+  section: anti-lost-ux
+  goal: Define reset landmarks and breadcrumb rules.
+  roles:
+  - wayfinding information architect
+  - web accessibility / AQA skeptical reviewer
+  aqa:
+  - deterministic assertions
+  - hostile malformed/missing-data case
+  - mobile/keyboard accessibility check
+  opensource_synergy_donors:
+  - synergy/289-roles
+  - MDN semantic HTML
+  glue: minimal local HTML/CSS/JS or metadata only
+  coverage:
+    artifact_scope: 100 places + 7 floor modules
+    status: required before successor
+  docs:
+  - docs/wayfinding.md
+  - plan.v1.yaml
+  evidence:
+  - evidence.v1.yaml
+  - SHA256SUMS.json
+  - exact Git readback when materialized
+  gates:
+  - currentness
+  - collision-free exact write-set
+  - no unverified room-number promotion
+  - Gitleaks before commit for H08+
+  successors:
+  - H04
+  professional_prompt: 'Act as a world-class museum wayfinding information architect
+    and skeptical accessibility AQA reviewer. Execute H03 only: Define reset landmarks
+    and breadcrumb rules. Preserve source provenance, uncertainty labels, exact scope,
+    progressive enhancement, and fail closed on unverified room/floor claims.'
+- id: H04
+  section: data-model
+  goal: Bind the existing 100-place dataset to floor hints without inventing exact
+    rooms.
+  roles:
+  - wayfinding information architect
+  - web accessibility / AQA skeptical reviewer
+  aqa:
+  - deterministic assertions
+  - hostile malformed/missing-data case
+  - mobile/keyboard accessibility check
+  opensource_synergy_donors:
+  - synergy/289-roles
+  - MDN semantic HTML
+  glue: minimal local HTML/CSS/JS or metadata only
+  coverage:
+    artifact_scope: 100 places + 7 floor modules
+    status: required before successor
+  docs:
+  - docs/wayfinding.md
+  - plan.v1.yaml
+  evidence:
+  - evidence.v1.yaml
+  - SHA256SUMS.json
+  - exact Git readback when materialized
+  gates:
+  - currentness
+  - collision-free exact write-set
+  - no unverified room-number promotion
+  - Gitleaks before commit for H08+
+  successors:
+  - H05
+  professional_prompt: 'Act as a world-class museum wayfinding information architect
+    and skeptical accessibility AQA reviewer. Execute H04 only: Bind the existing
+    100-place dataset to floor hints without inventing exact rooms. Preserve source
+    provenance, uncertainty labels, exact scope, progressive enhancement, and fail
+    closed on unverified room/floor claims.'
+- id: H05
+  section: implementation
+  goal: Build progressive-enhancement HTML/CSS/JS with zero third-party runtime.
+  roles:
+  - wayfinding information architect
+  - web accessibility / AQA skeptical reviewer
+  aqa:
+  - deterministic assertions
+  - hostile malformed/missing-data case
+  - mobile/keyboard accessibility check
+  opensource_synergy_donors:
+  - synergy/289-roles
+  - MDN semantic HTML
+  glue: minimal local HTML/CSS/JS or metadata only
+  coverage:
+    artifact_scope: 100 places + 7 floor modules
+    status: required before successor
+  docs:
+  - docs/wayfinding.md
+  - plan.v1.yaml
+  evidence:
+  - evidence.v1.yaml
+  - SHA256SUMS.json
+  - exact Git readback when materialized
+  gates:
+  - currentness
+  - collision-free exact write-set
+  - no unverified room-number promotion
+  - Gitleaks before commit for H08+
+  successors:
+  - H06
+  professional_prompt: 'Act as a world-class museum wayfinding information architect
+    and skeptical accessibility AQA reviewer. Execute H05 only: Build progressive-enhancement
+    HTML/CSS/JS with zero third-party runtime. Preserve source provenance, uncertainty
+    labels, exact scope, progressive enhancement, and fail closed on unverified room/floor
+    claims.'
+- id: H06
+  section: accessibility-aqa
+  goal: Validate disclosure, keyboard, reduced-motion, labels, live status and mobile
+    layout.
+  roles:
+  - wayfinding information architect
+  - web accessibility / AQA skeptical reviewer
+  aqa:
+  - deterministic assertions
+  - hostile malformed/missing-data case
+  - mobile/keyboard accessibility check
+  opensource_synergy_donors:
+  - synergy/289-roles
+  - MDN semantic HTML
+  glue: minimal local HTML/CSS/JS or metadata only
+  coverage:
+    artifact_scope: 100 places + 7 floor modules
+    status: required before successor
+  docs:
+  - docs/wayfinding.md
+  - plan.v1.yaml
+  evidence:
+  - evidence.v1.yaml
+  - SHA256SUMS.json
+  - exact Git readback when materialized
+  gates:
+  - currentness
+  - collision-free exact write-set
+  - no unverified room-number promotion
+  - Gitleaks before commit for H08+
+  successors:
+  - H07
+  professional_prompt: 'Act as a world-class museum wayfinding information architect
+    and skeptical accessibility AQA reviewer. Execute H06 only: Validate disclosure,
+    keyboard, reduced-motion, labels, live status and mobile layout. Preserve source
+    provenance, uncertainty labels, exact scope, progressive enhancement, and fail
+    closed on unverified room/floor claims.'
+- id: H07
+  section: content-aqa
+  goal: Check verified room numbers, source links, counts and uncertainty wording.
+  roles:
+  - wayfinding information architect
+  - web accessibility / AQA skeptical reviewer
+  aqa:
+  - deterministic assertions
+  - hostile malformed/missing-data case
+  - mobile/keyboard accessibility check
+  opensource_synergy_donors:
+  - synergy/289-roles
+  - MDN semantic HTML
+  glue: minimal local HTML/CSS/JS or metadata only
+  coverage:
+    artifact_scope: 100 places + 7 floor modules
+    status: required before successor
+  docs:
+  - docs/wayfinding.md
+  - plan.v1.yaml
+  evidence:
+  - evidence.v1.yaml
+  - SHA256SUMS.json
+  - exact Git readback when materialized
+  gates:
+  - currentness
+  - collision-free exact write-set
+  - no unverified room-number promotion
+  - Gitleaks before commit for H08+
+  successors:
+  - H08
+  professional_prompt: 'Act as a world-class museum wayfinding information architect
+    and skeptical accessibility AQA reviewer. Execute H07 only: Check verified room
+    numbers, source links, counts and uncertainty wording. Preserve source provenance,
+    uncertainty labels, exact scope, progressive enhancement, and fail closed on unverified
+    room/floor claims.'
+- id: H08
+  section: security
+  goal: Run deterministic static checks and Gitleaks v6+ before commit.
+  roles:
+  - wayfinding information architect
+  - web accessibility / AQA skeptical reviewer
+  aqa:
+  - deterministic assertions
+  - hostile malformed/missing-data case
+  - mobile/keyboard accessibility check
+  opensource_synergy_donors:
+  - synergy/289-roles
+  - MDN semantic HTML
+  glue: minimal local HTML/CSS/JS or metadata only
+  coverage:
+    artifact_scope: 100 places + 7 floor modules
+    status: required before successor
+  docs:
+  - docs/wayfinding.md
+  - plan.v1.yaml
+  evidence:
+  - evidence.v1.yaml
+  - SHA256SUMS.json
+  - exact Git readback when materialized
+  gates:
+  - currentness
+  - collision-free exact write-set
+  - no unverified room-number promotion
+  - Gitleaks before commit for H08+
+  successors:
+  - H09
+  professional_prompt: 'Act as a world-class museum wayfinding information architect
+    and skeptical accessibility AQA reviewer. Execute H08 only: Run deterministic
+    static checks and Gitleaks v6+ before commit. Preserve source provenance,
+    uncertainty labels, exact scope, progressive enhancement, and fail closed on unverified
+    room/floor claims.'
+- id: H09
+  section: git-object-materialization
+  goal: Create isolated tree/commit/branch only after security gate.
+  roles:
+  - wayfinding information architect
+  - web accessibility / AQA skeptical reviewer
+  aqa:
+  - deterministic assertions
+  - hostile malformed/missing-data case
+  - mobile/keyboard accessibility check
+  opensource_synergy_donors:
+  - synergy/289-roles
+  - MDN semantic HTML
+  glue: minimal local HTML/CSS/JS or metadata only
+  coverage:
+    artifact_scope: 100 places + 7 floor modules
+    status: required before successor
+  docs:
+  - docs/wayfinding.md
+  - plan.v1.yaml
+  evidence:
+  - evidence.v1.yaml
+  - SHA256SUMS.json
+  - exact Git readback when materialized
+  gates:
+  - currentness
+  - collision-free exact write-set
+  - no unverified room-number promotion
+  - Gitleaks before commit for H08+
+  successors:
+  - H10
+  professional_prompt: 'Act as a world-class museum wayfinding information architect
+    and skeptical accessibility AQA reviewer. Execute H09 only: Create isolated tree/commit/branch
+    only after security gate. Preserve source provenance, uncertainty labels, exact
+    scope, progressive enhancement, and fail closed on unverified room/floor claims.'
+- id: H10
+  section: draft-pr
+  goal: Open Draft PR with exact base/head/path closure and evidence.
+  roles:
+  - wayfinding information architect
+  - web accessibility / AQA skeptical reviewer
+  aqa:
+  - deterministic assertions
+  - hostile malformed/missing-data case
+  - mobile/keyboard accessibility check
+  opensource_synergy_donors:
+  - synergy/289-roles
+  - MDN semantic HTML
+  glue: minimal local HTML/CSS/JS or metadata only
+  coverage:
+    artifact_scope: 100 places + 7 floor modules
+    status: required before successor
+  docs:
+  - docs/wayfinding.md
+  - plan.v1.yaml
+  evidence:
+  - evidence.v1.yaml
+  - SHA256SUMS.json
+  - exact Git readback when materialized
+  gates:
+  - currentness
+  - collision-free exact write-set
+  - no unverified room-number promotion
+  - Gitleaks before commit for H08+
+  successors:
+  - H11
+  professional_prompt: 'Act as a world-class museum wayfinding information architect
+    and skeptical accessibility AQA reviewer. Execute H10 only: Open Draft PR with
+    exact base/head/path closure and evidence. Preserve source provenance, uncertainty
+    labels, exact scope, progressive enhancement, and fail closed on unverified room/floor
+    claims.'
+- id: H11
+  section: independent-review
+  goal: Run semantically independent skeptical review on immutable exact head.
+  roles:
+  - wayfinding information architect
+  - web accessibility / AQA skeptical reviewer
+  aqa:
+  - deterministic assertions
+  - hostile malformed/missing-data case
+  - mobile/keyboard accessibility check
+  opensource_synergy_donors:
+  - synergy/289-roles
+  - MDN semantic HTML
+  glue: minimal local HTML/CSS/JS or metadata only
+  coverage:
+    artifact_scope: 100 places + 7 floor modules
+    status: required before successor
+  docs:
+  - docs/wayfinding.md
+  - plan.v1.yaml
+  evidence:
+  - evidence.v1.yaml
+  - SHA256SUMS.json
+  - exact Git readback when materialized
+  gates:
+  - currentness
+  - collision-free exact write-set
+  - no unverified room-number promotion
+  - Gitleaks before commit for H08+
+  successors:
+  - H12
+  professional_prompt: 'Act as a world-class museum wayfinding information architect
+    and skeptical accessibility AQA reviewer. Execute H11 only: Run semantically independent
+    skeptical review on immutable exact head. Preserve source provenance, uncertainty
+    labels, exact scope, progressive enhancement, and fail closed on unverified room/floor
+    claims.'
+- id: H12
+  section: pages-publication
+  goal: 'Only after fresh owner/merge authority: merge expected head, verify GitHub
+    Pages HTTP readback.'
+  roles:
+  - wayfinding information architect
+  - web accessibility / AQA skeptical reviewer
+  aqa:
+  - deterministic assertions
+  - hostile malformed/missing-data case
+  - mobile/keyboard accessibility check
+  opensource_synergy_donors:
+  - synergy/289-roles
+  - MDN semantic HTML
+  glue: minimal local HTML/CSS/JS or metadata only
+  coverage:
+    artifact_scope: 100 places + 7 floor modules
+    status: required before successor
+  docs:
+  - docs/wayfinding.md
+  - plan.v1.yaml
+  evidence:
+  - evidence.v1.yaml
+  - SHA256SUMS.json
+  - exact Git readback when materialized
+  gates:
+  - currentness
+  - collision-free exact write-set
+  - no unverified room-number promotion
+  - Gitleaks before commit for H08+
+  successors: []
+  professional_prompt: 'Act as a world-class museum wayfinding information architect
+    and skeptical accessibility AQA reviewer. Execute H12 only: Only after fresh owner/merge
+    authority: merge expected head, verify GitHub Pages HTTP readback. Preserve source
+    provenance, uncertainty labels, exact scope, progressive enhancement, and fail
+    closed on unverified room/floor claims.'
+
+implementation_upgrade_2026_09_23:
+  scope: existing_eight_file_write_set_only
+  user_requirement_closed:
+  - seven keyboard-reachable floor-tab deep links
+  - per-floor ordinary-visitor exit/reset guidance
+  safety_boundary:
+  - no invented emergency evacuation geometry
+  - current on-site signage and staff override visitor-reset hints
+  aqa_required_before_security_admission:
+  - seven unique floor targets
+  - seven exit-guide blocks
+  - local data fetch path resolves
+  - 100 place records and seven floor modules parse
+  - SHA256SUMS exact readback
+  - Node JavaScript syntax check
+  successor_gate: actual installed Gitleaks major >= 6 PASS on exact improved candidate bytes before commit/ref/PR

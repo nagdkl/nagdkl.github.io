@@ -1,0 +1,101 @@
+schema: synergy.hermitage-wayfinding-evidence/v1
+as_of: '2026-09-23'
+repository: nagdkl/nagdkl.github.io
+expected_base: bea48392d4df0608a0f988b33bba31eaf1c46388
+lane_id: HERMITAGE-PAGES-WAYFINDING-20260923-A
+coordination_issue: 9
+calendar_lease:
+  current_event_id: mliv1i8gj4giailu8onq48mtf0
+  current_title: SYNERGY-LEASE Hermitage Pages writer A · 2026-09-23 continuation
+  current_start: '2026-09-23T17:20:00+03:00'
+  current_end: '2026-09-23T19:20:00+03:00'
+  current_status: READ_BACK_ACTIVE_AT_2026-09-23T17:53:00+03:00
+  historical_event_id: 06qh28baogfrmpte6292mghnh0
+  historical_status: expired_preserved_provenance
+  readback: PASS
+currentness:
+  target_head: bea48392d4df0608a0f988b33bba31eaf1c46388
+  open_prs:
+  - 5
+  - 7
+  path_overlap: false
+  control_plane_head: eda3a36914519e11dfa13593768ba4928525f6f1
+  contracts_head: c41aaa711a7b4447c96ebe5f97aaaec04cedcf88
+  canonical_policy_pointer_blob: 419ca2a16abca3af681d8b705a41f9697d9f218b
+  latest_archive_pointer_blob: 5e4de59647b266cbd68841d1f97c0f7bd454a20a
+  human_agent_boundary_blob: cc4d9957f30e8ee6328ec94519dbe05d6fd10ac0
+  review_policy_blob: fdfde194f5cbf656f2e2a3766e9e73fa9a0d8d52
+  observability_policy_blob: 20682903ea13a0dda327384bb6d04d183f38532d
+source_evidence:
+  main_complex_floor_count: 3
+  general_staff_floor_count: 4
+  confirmed_room_anchors:
+  - 1
+  - 2
+  - 3
+  - 11
+  - 12
+  - 228
+  - 239
+  - 240
+  - 241
+  - 300
+  - 324
+  - 325
+  - 329
+  - 330
+  - 332
+  - 391
+  - 431
+  - 442
+  2gis_indoor_routing_officially_described: true
+  pdf_extractable_in_tavily: false
+candidate:
+  places_total: 100
+  popular: 50
+  quiet: 50
+  floor_modules: 7
+  third_party_runtime_dependencies: 0
+  gitleaks:
+    minimum_major: 6
+    acceptance_rule: major_gte_minimum
+    actual_version_required: true
+    exact_scan_scope_required: true
+    pass_requires: {exit_code: 0, finding_count: 0}
+    status: NOT_RUN_ON_THIS_REBUILT_CANDIDATE
+  historical_gitleaks_8_30_1: BLOCKED_NOT_AVAILABLE_IN_CHATGPT_SANDBOX
+  source_commit_allowed: false
+  draft_pr_allowed: false
+  merge_allowed: false
+  pages_deployment_claim: false
+nonclaims:
+- no official live room-level crowd counts
+- no claim that every collection placement is immutable
+- no exact indoor geometry invented
+- no commit/branch/PR before installed Gitleaks major >= 6 PASS on the exact rebuilt candidate
+next_safe_action: Run an installed Gitleaks major >= 6 against this exact rebuilt candidate and the reachable
+  target history; only PASS may permit commit/branch/Draft PR materialization.
+
+local_aqa_upgrade_2026_09_23:
+  observed_at: 2026-09-23T18:28:23+03:00
+  donor_zip_sha256: f12d34c58106dde70a50d01f4d31ca043bcfe9456c56f55caf45fa1c2112555a
+  improvements:
+  - accessible floor-tab deep links: 7
+  - ordinary-visitor exit/reset guidance blocks: 7
+  - explicit non-evacuation safety boundary
+  deterministic_checks_planned_before_security_gate:
+  - exact write-set path equality
+  - SHA256SUMS verification
+  - Node app.js syntax
+  - JSON parse and 7 floor modules / 100 places
+  - internal local references resolve
+  gitleaks:
+    minimum_major: 6
+    status: NOT_RUN_ON_IMPROVED_BYTES
+    pass_rule: exit_code_0_and_findings_0
+  authority:
+    commit: false
+    branch: false
+    pull_request: false
+    merge: false
+    runtime: false
