@@ -1,0 +1,173 @@
+schema: synergy.pr7_sonar_repair_research/v5
+timestamp_basis: 2026-09-06
+repository: nagdkl/nagdkl.github.io
+pr: 7
+mission: close_exact_six_Sonar_annotations_without_widening_authority
+verified_start:
+  pr_head: adeaf4c92858f0843ecc21210c80817e70851a16
+  current_main: 0271aa210b587e53c08264de3342ba0fd14bb80f
+  current_main_tree: 285dd06e2192ee1bef33d61f18fcb81917f64ebb
+  incident_issue: 8
+sonar_findings:
+  - publisher_cognitive_complexity_line_236
+  - publisher_duplicate_bundle_manifest_literal_line_112
+  - validator_cognitive_complexity_line_63
+  - publisher_cognitive_complexity_line_370
+  - publisher_test_composite_assertion_line_14
+  - validator_cli_path_confinement_line_32
+selected_repair:
+  - remove_user_controlled_validator_prompt_path
+  - preserve_O_NOFOLLOW_regular_file_size_utf8_guards
+  - split_validator_invariants_into_helpers
+  - split_publisher_mirror_and_publication_phases
+  - define_bundle_manifest_constant
+  - split_composite_test_assertion
+  - add_arbitrary_cwd_and_path_confinement_regressions
+  - persist_this_repair_runner_as_normal_Git_source
+considered_candidates:
+  synergy_donors:
+    - PR7_existing_publisher_controls
+    - schema_tools_validator_patterns
+    - control_plane_currentness_recovery_patterns
+    - mcp_vm_control_supply_chain_patterns
+  external_reference_only:
+    - SonarSource_cognitive_complexity_guidance
+  rejected_new_dependencies:
+    - Bandit_not_authoritative_for_exact_Sonar_gate
+    - Ruff_not_authoritative_for_exact_Sonar_gate
+    - new_Git_abstraction_library_unnecessary
+criteria:
+  - exact_finding_correspondence
+  - smallest_touch_surface
+  - no_new_runtime_dependency
+  - deterministic_hostile_tests
+  - Gitleaks_before_commit
+  - full_history_Gitleaks_before_push
+  - zero_retry_and_read_only_recovery
+security:
+  gitleaks_version: 8.30.1
+  gitleaks_asset_sha256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+  direct_main_write: forbidden
+  force_push: false
+  automatic_retries: 0
+portability:
+  arbitrary_cwd: true
+  dirty_unrelated_repo_safe: true
+  execution_surfaces: [WSL2, Ubuntu_24, Ubuntu_26, compatible_Debian]
+reproducibility:
+  GitHub_remote_is_SSOT: true
+  local_model: reusable_bare_mirror_plus_ephemeral_worktree
+  clone_every_nanostep: false
+write_set_gate_repair:
+  prior_runner: v3
+  prior_blocker: write_set_drift_before_Gitleaks_commit_or_push
+  remote_mutation_from_prior_attempt: false
+  root_cause: git_diff_name_only_omits_untracked_reusable_Git_artifacts
+  expected_existing_modified_paths: 4
+  expected_new_untracked_paths: 2
+  v4_fix:
+    - in_memory_compile_no_pyc
+    - unittest_python_B_no_bytecode
+    - exact_pathset_union_tracked_diff_and_untracked_files
+    - unexpected_or_missing_path_fails_closed
+  hostile_AQA:
+    exact_4_tracked_plus_2_untracked: PASS
+    bytecode_artifacts_absent: PASS
+    extra_untracked_path: BLOCKED_PASS
+    missing_research_path: BLOCKED_PASS
+gitleaks_cache_install_repair:
+  prior_runner: v4
+  prior_blocker: gitleaks_cache_install_failed_before_commit_or_push
+  remote_mutation_from_prior_attempt: false
+  root_cause_class: cross_filesystem_unsafe_rename_boundary
+  evidence:
+    - v4_download_target_is_tempfile_TemporaryDirectory
+    - cache_target_is_XDG_CACHE_HOME_or_home_dot_cache
+    - Python_os_replace_may_fail_across_filesystems
+  selected_synergy_donors:
+    - repository: nagdkl-lab/control_plane
+      ref: 652f4177816a421877cc79cbad76543f48377498
+      path: scripts/git/preserve_local_work_to_draft_pr.py.part02
+      pattern: destination_local_mkstemp_flush_fsync_replace_directory_fsync
+    - repository: nagdkl-lab/schema_tools
+      ref: 2bf7002d47d2edcab8deda56e68266ac4ef12097
+      path: tools/wsl2/schema_tools_mvp_acceptance_v1.py
+      pattern: destination_local_temp_fsync_atomic_replace
+  external_reference:
+    source: Python_3_14_os_replace
+    url: https://docs.python.org/3/library/os.html#os.replace
+    fact: replace_may_fail_when_source_and_destination_are_on_different_filesystems
+  v5_fix:
+    - nonblocking_cache_lock_zero_retry
+    - copy_verified_bytes_to_secure_temp_in_destination_directory
+    - flush_and_fsync_temp
+    - sha256_readback_before_install
+    - same_filesystem_os_replace
+    - chmod_0600_and_directory_fsync
+    - preserve_existing_invalid_or_unknown_cache
+    - explicit_cache_hit_or_miss_terminal_step
+    - separate_gitleaks_identity_canary_step
+  rejected:
+    - shutil_move_reason_not_selected_because_cross_filesystem_copy_semantics_weaken_final_atomic_install_contract
+    - direct_cache_download_reason_not_selected_because_crash_can_leave_partial_canonical_asset
+recovery:
+  timeout_or_ambiguous_push: read_only_reconcile_before_replay
+  execution_surface_loss: resume_from_remote_branch_and_Draft_PR
+limitations:
+  - SonarCloud_is_final_acceptance_surface_for_reported_annotations
+  - exact_live_execution_requires_Human_Node_network_surface
+assumptions:
+  - gh_auth_remains_available_on_Human_Node
+known_unknowns:
+  - whether_Sonar_emits_new_findings_after_repair
+authority:
+  draft: true
+  ready: false
+  merge: false
+  runtime: false
+  release: false
+  deployment: false
+  production: false
+sonar_followup_after_commit_45a42a7:
+  verified_head: 45a42a76738020ecfb91aba1a1cafc9c1d70ffc3
+  sonar_check_run: 101395442062
+  quality_gate: FAILURE
+  security_rating_new_code: E
+  annotations_count: 5
+  old_six_findings_status: closed
+  new_findings_scope: scripts/human_node/repair_pr7_sonar_gate_v5.py
+  findings:
+    - line_784_path_construction_from_parameter
+    - line_793_path_construction_from_parameter
+    - line_927_cache_install_complexity_19
+    - line_1028_prepare_gitleaks_complexity_16
+    - line_1425_sonar_readback_complexity_30
+  selected_repair:
+    - fixed_literal_worktree_paths_with_resolve_and_containment
+    - split_cache_install_helpers
+    - split_gitleaks_asset_binary_canary_phases
+    - split_sonar_match_sanitize_failure_poll_phases
+    - focused_hostile_tests_for_path_confinement_cache_and_sonar_sanitization
+    - Git_backed_followup_launcher_v6
+  new_dependencies: none
+  Gitleaks_before_commit: mandatory
+  full_history_Gitleaks_before_push: mandatory
+  automatic_retries: 0
+  authority: Draft_only
+  postpush_Sonar_at_commit_time: pending
+
+launcher_self_source_recovery_v6_1:
+  observed_blocker: NameError_CANONICAL_SOURCE_before_materialization
+  remote_mutation_from_failed_attempt: false
+  root_cause: compact_followup_called_undefined_self_source_symbol
+  corrected_contract:
+    - canonical_source_reads_exact_current_launcher_via___file__
+    - symlink_or_non_regular_launcher_fails_closed
+    - exact_self_source_is_persisted_to_Git_followup_path
+    - research_replay_marker_matches_actual_payload_key
+  sandbox_evidence:
+    self_source_exact_bytes: PASS
+    symlink_fail_closed: PASS
+    exact_four_path_materialization: PASS
+    focused_hostile_tests: 10/10_PASS
+    max_heuristic_decision_count: 10
