@@ -1,0 +1,130 @@
+schema: synergy.pages_terminal_loss_recovery_research/v2
+lane:
+  repository: nagdkl/nagdkl.github.io
+  purpose: terminal-loss-safe read-only recovery and live GitHub Pages verification
+currentness:
+  publication_commit: ec8a94779c7e5ad33d1319a153a5d721d74744aa
+  index_blob: 2606d236549a1a43e9e5ba3684b888d784f18fe0
+  layout_blob: 0b4de0aa8242c2d533d86ba50d59b7a63dd8a097
+problem:
+  observed_failure: recursive search under /mnt/c/Users was unbounded and was interrupted with exit 130
+  root_cause: Windows filesystem-wide discovery was used for a bundle whose location should not be discovered recursively
+  correction: eliminate bundle discovery from canonical runtime; run a Git-saved Python verifier from an isolated workspace
+selection_order:
+  - proven_synergy_donor
+  - compatible_synergy_component
+  - mature_oss
+  - authoritative_public_engineering_source
+  - minimal_adapter
+  - new_code_last
+donors:
+  - repository: nagdkl-lab/control_plane
+    issue: 1620
+    accepted_patterns: [fail_closed_publication, exact_outgoing_gitleaks, zero_retries, unknown_is_not_pass]
+  - repository: nagdkl-lab/mcp_vm_control
+    issue: 823
+    accepted_patterns: [immutable_identity, redacted_evidence, read_only_recovery_after_ambiguous_transport, scanner_canary_contract]
+  - repository: nagdkl-lab/prompt_ops
+    pull_request: 1206
+    source_path: scripts/human_node/run_prompt_ops_c04_wsl2_oneclick_v7.sh
+    accepted_patterns: [private_state_root, exact_sha_binding, bounded_network_calls, python_adapter, terminal_left_open]
+oss_candidates:
+  - candidate: Python_3_stdlib
+    decision: ACCEPT
+    rationale: mature, ubiquitous on supported Ubuntu/Debian, deterministic, zero third-party runtime dependencies
+    modules: [argparse, pathlib, subprocess, tempfile, urllib.request, hashlib, json, dataclasses]
+  - candidate: pytest
+    decision: ACCEPT_TEST_ONLY
+    rationale: mature test runner; not required by runtime launcher
+  - candidate: uv
+    decision: OPTIONAL_TEST_ACCELERATOR
+    rationale: modern fast environment/tool runner; intentionally not required for recovery runtime
+  - candidate: httpx
+    decision: REJECT_RUNTIME
+    rationale: strong library but adds dependency/install surface where urllib is sufficient for one bounded GET
+  - candidate: rich
+    decision: REJECT_RUNTIME
+    rationale: presentation-only dependency; plain machine-readable STEP heartbeats are more portable
+  - candidate: tenacity
+    decision: REJECT
+    rationale: retry framework conflicts with Synergy zero-automatic-retry law
+criteria:
+  maturity: required
+  security: fail_closed
+  portability: Ubuntu_24_26_and_compatible_Debian_VM_VPS
+  reproducibility: immutable_git_sha_and_blob_binding
+  observability: STEP_START_STEP_OK_STEP_BLOCKED_STEP_FAIL_plus_receipt
+  recovery: remote_GitHub_source_of_truth
+  maintenance_burden: minimize
+  dependency_footprint: stdlib_runtime
+  deterministic_testing: required
+  replacement_cost: low
+compatibility_constraints:
+  current_working_directory: arbitrary
+  current_git_repository: may_be_dirty_and_unrelated
+  local_execution_surface: disposable
+  wsl2_role: Human_Agent_development_not_production
+security:
+  automatic_retries: 0
+  mutation_replay: forbidden
+  gitleaks_before_any_source_publication: mandatory
+  secrets_in_public_logs: forbidden
+  raw_scanner_findings_public: false
+timeout_policy:
+  local_read_s: 5
+  git_clone_s: 60
+  http_probe_s: 20
+  external_download_s: 60
+known_unknowns:
+  - direct live HTTP from ChatGPT sandbox is DNS-blocked
+  - exact outgoing Gitleaks v8.30.1 scan of v2 candidate still requires an execution surface with the admitted binary
+recovery_strategy:
+  - recover exact current GitHub ref and blob identities
+  - never scan or search an entire Windows user tree
+  - use isolated temporary checkout
+  - persist sanitized receipt under ~/.local/state/synergy-mesh/pages-recovery-v2
+  - publish v2 source only after exact outgoing Gitleaks PASS
+authoritative_external_sources:
+  - url: https://github.com/gitleaks/gitleaks/releases
+    observed: v8.30.1 latest; linux_x64_sha256 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+  - url: https://docs.astral.sh/uv/reference/policies/python/
+    observed: uv Tier 1 supports CPython 3.10 through 3.14
+  - url: https://docs.astral.sh/uv/
+    observed: uv is retained as optional test/tool acceleration, not runtime dependency
+final_selection:
+  runtime: Python_standard_library
+  test_runner: pytest
+  optional_tooling: uv
+  secret_scanner: Gitleaks_8_30_1_exact_asset
+  rejected_runtime_dependencies: [httpx, rich, tenacity]
+
+transport_v4:
+  problem_closed:
+    - inline_base64_copy_transport_corruption
+    - bash_errexit_suppression_under_or_list
+    - manual_package_resolution_dependency
+  selected_pattern:
+    - python_control_plane
+    - bounded_exact_path_probes
+    - browser_assisted_google_drive_download
+    - exact_sha256_binding
+    - git_native_launcher_after_first_publication
+  rejected:
+    recursive_windows_find: unbounded_wsl_ntfs_latency
+    giant_inline_base64: fragile_copy_transport
+    github_comment_executable_source: violates_source_of_truth_policy
+
+parallel_writer_reconciliation_20260905:
+  previous_main: ec8a94779c7e5ad33d1319a153a5d721d74744aa
+  current_main: 0e872af12b2aee39bc06df49bedf4e5a3179dbdc
+  competing_merge: nagdkl/nagdkl.github.io#4
+  competing_changed_paths:
+    - synergy/289-roles/SHA256SUMS.json
+    - synergy/289-roles/app.js
+    - synergy/289-roles/diagram.mmd
+    - synergy/289-roles/index.html
+    - synergy/289-roles/research.v1.yaml
+  recovery_source_path_overlap: 0
+  hse_index_blob_unchanged: 2606d236549a1a43e9e5ba3684b888d784f18fe0
+  hse_layout_blob_unchanged: 0b4de0aa8242c2d533d86ba50d59b7a63dd8a097
+  decision: rebind_exact_base_only
